@@ -16,8 +16,6 @@ vows.describe = (subject) ->
     return suite
 
 vows.checkDone = () ->
-    results = { honored: 0, broken: 0, errored: 0, pending: 0, total: 0 }
-     
     for suite in suites
         for batch in suite.batches
             if batch.status != 'end'
