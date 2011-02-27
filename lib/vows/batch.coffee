@@ -31,9 +31,9 @@ class vows.Batch extends events.EventEmitter
         count(@tests)
     
     run: () ->
-        @status = 'begin'
-        @emit('begin')
+        @emit(@status = 'begin', this)
         @startDate = new Date
+        
         @context = new vows.Context(@suite.description, @tests, this)
         @context.run()
         @checkDone()
@@ -47,7 +47,6 @@ class vows.Batch extends events.EventEmitter
             @suite.pending += @pending
             @suite.total += @total
 
-            @status = 'end'
             @suite.report(['end'])
-            @emit('end', @honored, @broken, @errored, @pending, @total, (@endDate - @startDate) / 1000)
+            @emit(@status = 'end', this)
             

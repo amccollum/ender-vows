@@ -7,6 +7,7 @@ class vows.Suite extends events.EventEmitter
         @reporter = null
         @batches = []
         @options = {}
+        @status = null
 
     reset: () ->
         @honored = 0
@@ -35,6 +36,7 @@ class vows.Suite extends events.EventEmitter
         @reporter = @options.reporter or @reporter
         @reset()
 
+        @emit(@status = 'begin', this)
         @startDate = new Date
 
         batches = (batch for batch in @batches when batch.remaining > 0)
@@ -56,11 +58,7 @@ class vows.Suite extends events.EventEmitter
                     @report(['finish', this])
 
                     callback(this) if callback
-
-                    if @honored + @pending == @total
-                        return 0
-                    else
-                        return 1
+                    @emit(@status = 'end', this)
     
             runBatch()
 

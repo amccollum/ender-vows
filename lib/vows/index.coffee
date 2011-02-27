@@ -15,51 +15,23 @@ vows.describe = (subject) ->
 
     return suite
 
+vows.checkDone = () ->
+    results = { honored: 0, broken: 0, errored: 0, pending: 0, total: 0 }
+     
+    for suite in suites
+        for batch in suite.batches
+            if batch.status != 'end'
+                suite.reporter.report(['error', { error: 'Asynchronous Error', suite: suite }])
 
-
-#
-# On exit, check that all promises have been fired.
-# If not, report an error message.
-#
-# process.addListener('exit', function () {
-#     results = { honored: 0, broken: 0, errored: 0, pending: 0, total: 0 }, failure
-# 
-#     vows.suites.forEach(function (s) {
-#         if ((s.results.total > 0) && (s.results.time === null)) {
-#             s.reporter.report(['error', { error: 'Asynchronous Error', suite: s }])
-#         }
-#         s.batches.forEach(function (b) {
-#             unFired = []
-# 
-#             b.vows.forEach(function (vow) {
-#                 if (! vow.status) {
-#                     if (unFired.indexOf(vow.context) === -1) {
-#                         unFired.push(vow.context)
-#                     }
-#                 }
-#             })
-# 
-#             if (unFired.length > 0) { sys.print('\n') }
-# 
-#             unFired.forEach(function (title) {
-#                 s.reporter.report(['error', {
-#                     error: 'not fired!',
-#                     context: title,
-#                     batch: b,
-#                     suite: s
-#                 }])
-#             })
-# 
-#             if (b.status === 'begin') {
-#                 failure = true
-#                 results.errored ++
-#                 results.total ++
-#             }
-#             Object.keys(results).forEach(function (k) { results[k] += b[k] })
-#         })
-#     })
-#     if (failure) {
-#         sys.puts(console.result(results))
-#     }
-# })
-
+            unfired = []
+            for vow in batch.vows
+                if not vow.status and vow.context not in unfired
+                    unfired.push(vow.context)
+                    s.reporter.report(['error', {
+                        error: 'not fired!',
+                        context: vow.description,
+                        batch: b,
+                        suite: s
+                    }])
+ 
+            # if batch.status == 'begin'
