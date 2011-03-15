@@ -67,16 +67,16 @@ class vows.Context extends events.EventEmitter
             when 'comment' then @end('pending')
             when 'test'
                 @results.total++
-                # try
-                @content.apply(@env, @topics)
-                @end('honored')
+                try
+                    @content.apply(@env, @topics)
+                    @end('honored')
         
-                # catch e
-                #      @exception = e
-                #      if e.name?.match(/AssertionError/)
-                #          @end('broken')
-                #      else
-                #          @end('errored')
+                catch e
+                     @exception = e
+                     if e.name?.match(/AssertionError/)
+                         @end('broken')
+                     else
+                         @end('errored')
              
             when 'batch'
                 vows.report(['subject', @description]) if @description
