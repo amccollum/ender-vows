@@ -216,21 +216,6 @@ class vows.Context extends events.EventEmitter
         # prevent CoffeeScript from returning a value
         return
 
-    # for compatibility with traditional vows
-    addBatch: (batch) ->
-        @content.push(batch)
-        return this
-
-    export: (module, options) ->
-        for key, value of (options or {})
-            @options[key] = value
-        
-        if require.main == module then @run()
-        else module.exports[this.description] = this
-        return this
-
-    exportTo: @prototype.export # Alias, for JSLint
-
 
 class vows.Runner extends vows.Context
     constructor: () -> super(null, [])
@@ -246,6 +231,7 @@ class vows.Runner extends vows.Context
 vows.version = '0.0.1'
 vows.runner = new vows.Runner()
 vows.add = (suite) -> vows.runner.add(suite)
+vows.run = () -> vows.runner.run()
+vows.report = () -> vows.reporter.report.apply(vows.reporter, arguments) if vows.reporter
 
-process.on 'exit', () ->
-    debugger
+#process.on 'exit', () -> debugger

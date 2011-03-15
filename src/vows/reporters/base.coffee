@@ -9,7 +9,6 @@ class vows.BaseReporter
 
 
 vows.reporter = new vows.BaseReporter
-vows.report = () -> vows.reporter.report.apply(vows.reporter, arguments)
 vows.puts = () ->
     args = (vows.format(arg) for arg in Array.prototype.slice.call(arguments))
     return vows.stream.write(args.join('\n') + '\n')
