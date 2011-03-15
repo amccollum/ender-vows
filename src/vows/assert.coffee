@@ -1,4 +1,28 @@
-assert ?= require('assert')
+assert = @assert ? require('assert')
+
+# inspect = (str) -> str
+# stylize = (str, style) -> str
+# assert.AssertionError.prototype.toString = () ->
+#     source = @stack.match(/([a-zA-Z0-9_-]+\.js)(:\d+):\d+/)
+# 
+#     parse = (str) =>
+#         str.replace(/{actual}/g, inspect(@actual))
+#            .replace(/{operator}/g, stylize(@operator, 'bold'))
+#            .replace(/{expected}/g,
+#                     if @expected instanceof Function
+#                     then @expected.name
+#                     else inspect(@expected))
+# 
+#     if @message
+#         return stylize(parse(this.message), 'yellow') +
+#                stylize(' // ' + source[1] + source[2], 'grey');
+#     else
+#         return stylize([
+#             this.expected,
+#             this.operator,
+#             this.actual
+#         ].join(' '), 'yellow')
+# 
 
 assert.matches = assert.match = (actual, expected, message) ->
     assert.fail(actual, expected, message, 'match', assert.match) if not expected.test(actual)
@@ -16,10 +40,10 @@ assert.isNotZero = (actual, message) ->
     assert.fail(actual, 0, message, '===', assert.isNotZero) if actual == 0
 
 assert.greater = (actual, expected, message) ->
-    assert.fail(actual, expected, message, '>', assert.greater) if not actual > expected
+    assert.fail(actual, expected, message, '>', assert.greater) if not (actual > expected)
 
 assert.lesser = (actual, expected, message) ->
-    assert.fail(actual, expected, message, '<', assert.lesser) if not actual < expected
+    assert.fail(actual, expected, message, '<', assert.lesser) if not (actual < expected)
 
 assert.includes = assert.include = (actual, expected, message) ->
     if not ((isArray(actual) or isString(actual) and actual.indexOf(expected) != -1) or
@@ -81,7 +105,6 @@ typeOf = (value) ->
             for type in types
                 if value instanceof type
                     s = type.name.toLowerCase()
-                    break
                 
         else
             s = 'null'
