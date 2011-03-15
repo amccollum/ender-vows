@@ -1,7 +1,7 @@
 vows = @vows ? require('vows')
 
 vows.add
-    'vows/assert':
+    'vows/assert': [
         'The Assertion module':
             topic: @assert ? require('assert')
 
@@ -84,3 +84,4 @@ vows.add
                 assert.isEmpty({})
                 assert.isEmpty([])
                 assert.isEmpty('')
+    ]

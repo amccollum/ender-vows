@@ -5,6 +5,13 @@ require.paths.unshift("#{__dirname}/..") if module?
 require('vows/extras') if module?
 require('vows/assert') if module?
 
+# external API
+vows.version = '0.0.1'
+vows.describe = (description) -> new vows.Suite(description, Array.prototype.slice.call(arguments, 1))
+vows.add = (suite) -> vows.runner.add(suite)
+vows.run = () -> vows.runner.run()
+vows.report = () -> vows.reporter.report.apply(vows.reporter, arguments) if vows.reporter
+
 
 class vows.Context extends events.EventEmitter
     constructor: (description, content, parent) ->
@@ -217,6 +224,27 @@ class vows.Context extends events.EventEmitter
         return
 
 
+# Compatibility with regular vows
+class vows.Suite
+    constructor: (description, content) ->
+        @suite = {}
+        @content = content ? []
+        @suite[description] = @content
+        vows.add(@suite)
+    
+    addBatch: (tests) ->
+        @content.push(tests)
+        return this
+        
+    export: (module, options) ->
+        if module? and require.main == module
+            return vows.run()
+        else
+            return module.exports[@description] = this
+
+    @::exportTo = @::export
+
+
 class vows.Runner extends vows.Context
     constructor: () -> super(null, [])
     add: (suite) -> @content.push(suite)
@@ -227,11 +255,6 @@ class vows.Runner extends vows.Context
             
         return super()
 
-
-vows.version = '0.0.1'
 vows.runner = new vows.Runner()
-vows.add = (suite) -> vows.runner.add(suite)
-vows.run = () -> vows.runner.run()
-vows.report = () -> vows.reporter.report.apply(vows.reporter, arguments) if vows.reporter
 
 #process.on 'exit', () -> debugger
