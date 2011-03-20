@@ -11,28 +11,26 @@ api = vows.prepare({
 
 promiser = () ->
     args = Array.prototype.slice.call(arguments)
-    () ->
-        promise = new events.EventEmitter
-        setTimeout((() -> promise.emit.apply(promise, ['success'].concat(args))), 1)
-        return promise
+    promise = new events.EventEmitter
+    setTimeout((() -> promise.emit.apply(promise, ['success'].concat(args))), 100)
+    return promise
 
 promiseBreaker = (val) ->
     args = Array.prototype.slice.call(arguments)
-    () ->
-        promise = new events.EventEmitter
-        setTimeout((() -> promise.emit.apply(promise, ['error'].concat(args))), 1)
-        return promise
+    promise = new events.EventEmitter
+    setTimeout((() -> promise.emit.apply(promise, ['error'].concat(args))), 100)
+    return promise
 
 
 vows.add
     'Vows': [
         'A context': 
-            topic: promiser('hello world')()
+            topic: promiser('hello world')
 
             'with a nested context':
                 topic: (parent) ->
                     @state = 42
-                    return promiser(parent)()
+                    return promiser(parent)
             
                 'has access to the environment': () ->
                     assert.equal(@state, 42)
@@ -50,22 +48,22 @@ vows.add
     
     
         'A nested context': 
-            topic: promiser(1)(),
+            topic: promiser(1),
 
             '.': 
-                topic: (a) -> promiser(2)() 
+                topic: (a) -> promiser(2) 
 
                 '.': 
-                    topic: (b, a) -> promiser(3)() 
+                    topic: (b, a) -> promiser(3) 
 
                     '.': 
-                        topic: (c, b, a) -> promiser([4, c, b, a])() 
+                        topic: (c, b, a) -> promiser([4, c, b, a]) 
 
                         'should have access to the parent topics': (topics) ->
                             assert.equal(topics.join(), [4, 3, 2, 1].join())
 
                     'from': 
-                        topic: (c, b, a) -> promiser([4, c, b, a])() 
+                        topic: (c, b, a) -> promiser([4, c, b, a]) 
 
                         'the parent topics': (topics) ->
                             assert.equal(topics.join(), [4, 3, 2, 1].join())
@@ -156,7 +154,7 @@ vows.add
             
     
         'A topic emitting an error': 
-            topic: promiseBreaker(404)()
+            topic: promiseBreaker(404)
         
             'shouldn\'t raise an exception if the test expects it': (e, res) ->
                 assert.equal(e, 404)
@@ -164,7 +162,7 @@ vows.add
         
     
         'A topic not emitting an error': 
-            topic: () -> promiser(true)()
+            topic: () -> promiser(true)
         
             'should pass `null` as first argument, if the test is expecting an error': (e, res) ->
                 assert.strictEqual(e, null)

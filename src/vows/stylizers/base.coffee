@@ -28,7 +28,7 @@ vows.stringify = (obj) ->
     result = switch typeOf(obj)
         when 'regexp'    then vows.stylize('/' + obj.source + '/', 'regexp')
         when 'number'    then vows.stylize(obj.toString(), 'number')
-        when 'boolean'   then vows.stylize(obj.toString(), 'bool')
+        when 'boolean'   then vows.stylize(obj.toString(), 'boolean')
         when 'null'      then vows.stylize('null', 'special')
         when 'undefined' then vows.stylize('undefined', 'special')
         when 'function'  then vows.stylize('[Function]', 'other')

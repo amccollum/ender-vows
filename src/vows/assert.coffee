@@ -1,28 +1,19 @@
 assert = @assert ? require('assert')
+vows = @vows ? require('vows')
 
-# inspect = (str) -> str
-# stylize = (str, style) -> str
-# assert.AssertionError.prototype.toString = () ->
-#     source = @stack.match(/([a-zA-Z0-9_-]+\.js)(:\d+):\d+/)
-# 
-#     parse = (str) =>
-#         str.replace(/{actual}/g, inspect(@actual))
-#            .replace(/{operator}/g, stylize(@operator, 'bold'))
-#            .replace(/{expected}/g,
-#                     if @expected instanceof Function
-#                     then @expected.name
-#                     else inspect(@expected))
-# 
-#     if @message
-#         return stylize(parse(this.message), 'yellow') +
-#                stylize(' // ' + source[1] + source[2], 'grey');
-#     else
-#         return stylize([
-#             this.expected,
-#             this.operator,
-#             this.actual
-#         ].join(' '), 'yellow')
-# 
+assert.AssertionError.prototype.toString = () ->
+    source = @stack.match(/([a-zA-Z0-9_-]+\.js)(:\d+):\d+/)
+
+    if @message
+        message = @message.replace(/{actual}/g, vows.stringify(@actual))
+                          .replace(/{operator}/g, vows.stylize(@operator).bold())
+                          .replace(/{expected}/g, vows.stringify(@expected))
+                           
+        return vows.stylize(message).warning() + vows.stylize(" // #{source[1]}#{source[2]}").comment()
+        
+    else
+        return vows.stylize([@expected, @operator, @actual].join(' ')).warning()
+
 
 assert.matches = assert.match = (actual, expected, message) ->
     assert.fail(actual, expected, message, 'match', assert.match) if not expected.test(actual)

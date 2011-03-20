@@ -1,6 +1,5 @@
 vows = @vows ? require('../index')
 vows.BaseReporter ? require('./base')
-vows.ConsoleStylizer ? require('../stylizers/console')
 
 class vows.SpecReporter extends vows.BaseReporter
     name: 'spec'
@@ -9,62 +8,42 @@ class vows.SpecReporter extends vows.BaseReporter
         switch data[0]
             when 'subject' then @print("\n♢ #{vows.stylize(event).bold()}\n")
             when 'context' then @print("  #{event}\n")
-            when 'vow' then @print(@_vowEvent(event).join('\n') + '\n')
+            when 'vow' then @print(@_vowEvent(event))
             when 'end' then @print('\n')
-            when 'finish' then @print('\n' + @_resultEvent(event).join('\n') + '\n')
-            when 'error' then @print(@_errorEvent(event).join('\n') + '\n')
+            when 'finish' then @print('\n' + @_resultEvent(event))
+            when 'error' then @print(@_errorEvent(event))
 
     _vowEvent: (event) ->
-        parts = []
-
-        parts.push({
-                honored: "    ✓ #{vows.stylize(event.title).green()}",
-                broken:  "    ✗ #{vows.stylize(event.title).yellow()}",
-                errored: "    ✗ #{vows.stylize(event.title).red()}",
-                pending: "    - #{vows.stylize(event.title).cyan()}",
-        }[event.result])
-
-        if event.result == 'broken'
-            parts.push("      » #{event.exception}")
-        else if event.result == 'errored'
-            if event.exception.type == 'promise'
-                parts.push('      » ' + vows.stylize('An unexpected error was caught: ' +
-                                                     vows.stylize(event.exception.error).bold()).red())
-            else
-                parts.push("    #{vows.stylize(event.exception).red()}")
-
-        return parts
+        return switch event.result
+            when 'honored' then vows.stylize("    ✓ #{event.title}\n").success()
+            when 'broken'  then vows.stylize("    ✗ #{event.title}\n      » #{event.exception}\n").warning()
+            when 'errored' then vows.stylize("    ⊘ #{event.title}\n      » #{event.exception}\n").error()
+            when 'pending' then vows.stylize("    ∴ #{event.title}\n").pending()
 
     _resultEvent: (event) ->
-        complete = event.honored + event.pending + event.errored + event.broken
-
         if event.total == 0
-            return [vows.stylize('Could not find any tests to run.').bold().red()]
-
-        parts = []
-        parts.push("#{vows.stylize(event.honored).bold()} honored") if event.honored
-        parts.push("#{vows.stylize(event.broken).bold()} broken") if event.broken
-        parts.push("#{vows.stylize(event.errored).bold()} errored") if event.errored
-        parts.push("#{vows.stylize(event.pending).bold()} pending") if event.pending
-        parts.push("#{vows.stylize(event.total - complete).bold()} dropped") if complete < event.total
-        message = parts.join(' ∙ ')
+            return vows.stylize('Could not find any tests to run.\n').bold().error()
 
         status = (event.errored and 'errored') or (event.broken and 'broken') or
                  (event.honored and 'honored') or (event.pending and 'pending')
 
-        switch status
-            when 'errored' then header = "✗ #{vows.stylize('Errored').bold().red()}"
-            when 'broken' then header = "✗ #{vows.stylize('Broken').bold().yellow()}"
-            when 'honored' then header = "✓ #{vows.stylize('OK').bold().green()}"
-            when 'pending' then header = "- #{vows.stylize('Pending').bold().cyan()}"
+        header = switch status
+            when 'honored' then vows.stylize("✓ #{vows.stylize('OK').bold()}").success()
+            when 'broken'  then vows.stylize("✗ #{vows.stylize('Broken').bold()}").warning()
+            when 'errored' then vows.stylize("⊘ #{vows.stylize('Errored').bold()}").error()
+            when 'pending' then vows.stylize("∵ #{vows.stylize('Pending').bold()}").pending()
 
-        time = vows.stylize(event.duration.toFixed(3)).grey()
-        return ["#{header} » #{message} (#{time})"]
+        message = []
+        for key in ['honored', 'pending', 'broken', 'errored']
+            message.push("#{vows.stylize(event[key]).bold()} #{key}") if event[key]
+            
+        time = vows.stylize(event.duration.toFixed(3)).message()
+        return vows.stylize("#{header} » #{message.join(' ∙ ')} (#{time})\n").result()
         
     _errorEvent: (event) ->
-        return ["✗ #{vows.stylize('Errored').red()} " + 
+        return ("✗ #{vows.stylize('Errored').error()} " + 
                 "» #{vows.stylize(vow.title).bold()}" +
-                ": #{vows.stylize(vow.exception).red()}"]
+                ": #{vows.stylize(vow.exception).error()}\n")
 
 
 vows.reporter = new vows.SpecReporter

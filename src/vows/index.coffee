@@ -14,7 +14,7 @@ vows.report = () -> vows.reporter.report.apply(vows.reporter, arguments) if vows
 
 
 class vows.Context extends events.EventEmitter
-    constructor: (description, content, parent) ->
+    constructor: (description, content, parent, options) ->
         @description = description
         @content = content
         @parent = parent
@@ -22,11 +22,11 @@ class vows.Context extends events.EventEmitter
         # silence node EventEmitter warnings
         @_events = { maxListeners: 100 }
 
-        # @options = options ? parent?.options ? {}
-        # @matched = not @options.matcher? or @parent?.matched or @options.matcher.test(@description)
-        # if not @matched
-        #     @emit(@status = 'skip')
-        #     return @end('skipped')
+        @options = options ? parent?.options ? {}
+        @matched = not @options.matcher? or @parent?.matched or @options.matcher.test(@description)
+        if not @matched
+             @emit(@status = 'skip')
+             return @end('skipped')
 
         switch typeof @content
             when 'string' then @type = 'comment'
@@ -44,7 +44,11 @@ class vows.Context extends events.EventEmitter
         @results = { startDate: null, endDate: null }
         for key in ['total', 'running', 'honored', 'pending', 'broken', 'errored']
             @results[key] = 0
-    
+
+    report: (ob) -> vows.report(ob) if not @options.silent
+
+    _expectsError: (fn) -> /^function\s*\w*\s*\(\s*(e|err|error)\s*,/.test(fn)
+
     run: (topics) ->
         @topics = if topics? then Array.prototype.slice.call(topics) else []
         @emit(@status = 'begin')
@@ -52,46 +56,45 @@ class vows.Context extends events.EventEmitter
 
         # create the environment, inherited from the parent environment
         context = this
-        @env = new class Env
-            constructor: () ->
-                @context = context
-                @topics = context.topics
-                @success = () -> context.success.apply(context, arguments)
-                @error = () -> context.error.apply(context, arguments)
-                @callback = () -> context.callback.apply(context, arguments)
+        do (context) =>
+            @env = new class Env
+                constructor: () ->
+                    @context = context
+                    @topics = context.topics
+                    @success = () -> context.success.apply(context, arguments)
+                    @error = () -> context.error.apply(context, arguments)
+                    @callback = () -> context.callback.apply(context, arguments)
                 
-            @:: = (if context.parent then context.parent.env else {})
-            @::constructor = @
+                # set the prototype to the parent environment
+                @:: = (if context.parent then context.parent.env else {})
+                @::constructor = @
 
         switch @type
             when 'comment' then @end('pending')
             when 'test'
-                @results.total++
                 try
                     @content.apply(@env, @topics)
                     @end('honored')
         
                 catch e
-                     @exception = e
-                     if e.name?.match(/AssertionError/)
-                         @end('broken')
-                     else
-                         @end('errored')
+                    @exception = e
+                    if e.name?.match(/AssertionError/)
+                        @end('broken')
+                    else
+                        @end('errored')
              
             when 'batch'
-                vows.report(['subject', @description]) if @description
+                @report(['subject', @description]) if @description
                 return @end('done') if not @content.length
                 
                 # run each item synchronously
                 children = @content.slice()
                 next = new vows.Context(null, children.pop(), this)
                 next.on 'end', () => @end('done')
-                next.on 'error', () => @end('done')
                 
                 while children.length
                     next = new vows.Context(null, children.pop(), this)
                                .on 'end', do (next) -> () -> next.run(topics)
-                               .on 'error', do (next) -> () -> next.run(topics)
 
                 next.run(@topics)
         
@@ -109,38 +112,35 @@ class vows.Context extends events.EventEmitter
                 for key, value of @content
                     continue if key in ['topic', 'teardown']
                     child = new vows.Context(key, value, this)
-                    # continue if not child.matched
-                    
-                    # report the context of the tests
-                    if not hasTests and child.type == 'test'
-                        hasTests = true
-                        @on 'run', () =>
-                            parent = this
-                            parts = [@description]
-                            parts.unshift(parent.description) while (parent = parent.parent) and parent.description
-                            vows.report(['context', parts.join(' ')])
+                    continue if not child.matched
                     
                     do (child) =>
                         @results.running++
+                        
+                        # report the context of the tests
+                        if not hasTests and child.type == 'test'
+                            hasTests = true
+                            @on 'run', () =>
+                                context = this
+                                parts = [@description]
+                                parts.unshift(context.description) while (context = context.parent) and context.description
+                                @report(['context', parts.join(' ')])
+                    
                         @on 'topic', () =>
-                            if child.type == 'test' and /^function\s*\w*\s*\(\s*(e|err|error)\s*,/.test(child.content)
+                            if child.type == 'test' and @_expectsError(child.content)
                                 child.run([null].concat(@topics))
                             else
                                 child.run(@topics)
                             
                         @on 'error', (e) =>
-                            if child.type == 'test' and /^function\s*\w*\s*\(\s*(e|err|error)\s*,/.test(child.content)
+                            if child.type == 'test' and @_expectsError(child.content)
                                 child.run(arguments)
-                                
                             else
-                                @results.running--
-                                if not @results.running
-                                    @end('done') 
+                                # force the child to error
+                                child.end('errored')
 
                         child.on 'end', (result) =>
-                            @results.running--
-                            if not @results.running
-                                @end('done') 
+                            @end('done') if not --@results.running
 
                 # teardown
                 @on 'topic', () =>
@@ -170,15 +170,16 @@ class vows.Context extends events.EventEmitter
 
     end: (result) ->
         if @status in ['end']
-            @emit('error', 'The \'end\' event was triggered twice')
+            throw new Error('The \'end\' event was triggered twice')
             
         @result = result
         @results.endDate = new Date
         @results.duration = (@results.endDate - @results.startDate) / 1000
 
-        if @type == 'test'
+        if @type in ['test', 'comment']
+            @results.total++
             @results[result]++
-            vows.report(['vow', {
+            @report(['vow', {
                 title: @description,
                 context: @parent.description,
                 result: @result,
@@ -205,7 +206,7 @@ class vows.Context extends events.EventEmitter
         
     callback: () =>
         if @status in ['run', 'end']
-            @emit('error', 'The callback was called twice. Did an asynchronous callback return a value?')
+            throw new Error('The callback was called twice. Did an asynchronous callback return a value?')
 
         @emit(@status = 'run')
         args = Array.prototype.slice.call(arguments)
@@ -250,7 +251,10 @@ class vows.Runner extends vows.Context
     add: (suite) -> @content.push(suite)
     run: (callback) ->
         @on 'end', () =>
-            vows.report(['finish', @results])
+            @results.dropped = @results.total - (@results.honored + @results.pending +
+                                                 @results.errored + @results.broken)
+                                                 
+            @report(['finish', @results])
             callback(@results) if callback?
             
         return super()

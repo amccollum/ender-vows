@@ -5,10 +5,7 @@ class vows.BaseReporter
     constructor: () -> @reset()
     reset: () -> null
     report: (data) -> null
-    print: (str) -> process.stdout.write('' + str)
-
+    print: (ob) -> vows.write('' + ob)
 
 vows.reporter = new vows.BaseReporter
-vows.puts = () ->
-    args = (vows.format(arg) for arg in Array.prototype.slice.call(arguments))
-    return vows.stream.write(args.join('\n') + '\n')
+vows.write = (str) -> process.stdout.write(str)

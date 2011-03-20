@@ -14,14 +14,14 @@ class vows.DotMatrixReporter extends vows.SpecReporter
             when 'context' then null
             when 'vow'
                 switch event.result
-                    when 'honored' then @print(vows.stylize('·').green())
-                    when 'pending' then @print(vows.stylize('-').cyan())
+                    when 'honored' then @print(vows.stylize('·').success())
+                    when 'pending' then @print(vows.stylize('-').pending())
                     when 'broken', 'errored'
                         if @lastContext != event.context
                             @lastContext = event.context
                             @messages.push("  #{event.context}")
 
-                        @print(vows.stylize('✗', if event.result == 'broken' then 'yellow' else 'red'))
+                        @print(vows.stylize('✗', if event.result == 'broken' then 'warning' else 'error'))
                         @messages = @messages.concat(@_vowEvent(event))
                         @messages.push('')
                         

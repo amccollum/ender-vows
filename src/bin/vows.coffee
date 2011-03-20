@@ -13,6 +13,7 @@ catch e
 
 require.paths.unshift(path.join(__dirname, '..', 'lib'))
 vows = require('vows')
+require('vows/stylizers/console')
 
 help = [
     'usage: vows [FILE, ...] [options]',
