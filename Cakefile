@@ -32,7 +32,9 @@ task 'build-test', 'Build the test folder', ->
 task 'build-example', 'Build the example folder', ->
     cmds = [
         'coffee --compile --bare --output ./example ./src/example/*.coffee',
-        'cp ./src/example/example.* ./example',
+        'cp ./src/example/testsuite.html ./example',
+        'cp ./src/example/example.html ./example',
+        'cp ./src/example/vows.css ./example',
     ]
 
     exec cmds.join(' && '), (err, stdout, stderr) ->
