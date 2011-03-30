@@ -21,7 +21,6 @@ Tests written for vows should run unmodified, but there are a few API additions 
 example
 -------
 
-    # browser-compatible imports
     vows = require('vows')
     assert = require('assert')
 
