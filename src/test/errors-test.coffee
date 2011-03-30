@@ -1,6 +1,6 @@
-vows = @vows ? require('vows')
-events = @events ? require('events')
-assert = @assert ? require('assert')
+vows = require('vows')
+events = require('events')
+assert = require('assert')
 
 
 vowPromiser = (description, content, parent) ->
@@ -15,7 +15,7 @@ vowPromiser = (description, content, parent) ->
 vows.add
     'Vows Errors': [
         'A pending test': 
-            topic: vowPromiser('A test', {
+            topic: () -> vowPromiser('A test', {
                 'that is pending': 'pending'
             })
             
@@ -24,7 +24,7 @@ vows.add
                 assert.equal(context.results['pending'], 1)
 
         'A test failing an assertion': 
-            topic: vowPromiser('A test', {
+            topic: () -> vowPromiser('A test', {
                 topic: false
                 'failing an assertion': (topic) -> assert.equal(topic, true)
             })
@@ -34,7 +34,7 @@ vows.add
                 assert.equal(context.results['broken'], 1)
 
         'A test throwing an error': 
-            topic: vowPromiser('A test', {
+            topic: () -> vowPromiser('A test', {
                 topic: false
                 'throwing an error': (topic) -> throw new Error('This is an error!')
             })
@@ -44,7 +44,7 @@ vows.add
                 assert.equal(context.results['errored'], 1)
 
         'A topic throwing an error': 
-            topic: vowPromiser('A test', {
+            topic: () -> vowPromiser('A test', {
                 topic: () -> @error('This is an error!')
                 'not expecting an error': (topic) -> assert.ok(true) 
                 'expecting an error': (err, topic) -> assert.ok(true) 
@@ -59,7 +59,7 @@ vows.add
                 assert.equal(context.results['honored'], 1)
 
         'A test that never runs its callback': 
-            topic: vowPromiser('A test', {
+            topic: () -> vowPromiser('A test', {
                 topic: () -> return
                 'that never runs its callback': (topic) -> assert.ok(null)
             })

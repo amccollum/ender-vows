@@ -1,7 +1,7 @@
-vows = @vows ? require('vows')
-events = @events ? require('events')
-assert = @assert ? require('assert')
-fs = @fs ? require('fs')
+vows = require('vows')
+events = require('events')
+assert = require('assert')
+fs = require('fs')
 
 
 api = vows.prepare({
@@ -12,20 +12,20 @@ api = vows.prepare({
 promiser = () ->
     args = Array.prototype.slice.call(arguments)
     promise = new events.EventEmitter
-    setTimeout((() -> promise.emit.apply(promise, ['success'].concat(args))), 100)
+    setTimeout((() -> promise.emit.apply(promise, ['success'].concat(args))), 1)
     return promise
 
 promiseBreaker = (val) ->
     args = Array.prototype.slice.call(arguments)
     promise = new events.EventEmitter
-    setTimeout((() -> promise.emit.apply(promise, ['error'].concat(args))), 100)
+    setTimeout((() -> promise.emit.apply(promise, ['error'].concat(args))), 1)
     return promise
 
 
 vows.add
     'Vows': [
         'A context': 
-            topic: promiser('hello world')
+            topic: () -> promiser('hello world')
 
             'with a nested context':
                 topic: (parent) ->
@@ -48,7 +48,7 @@ vows.add
     
     
         'A nested context': 
-            topic: promiser(1),
+            topic: () -> promiser(1),
 
             '.': 
                 topic: (a) -> promiser(2) 
@@ -154,7 +154,7 @@ vows.add
             
     
         'A topic emitting an error': 
-            topic: promiseBreaker(404)
+            topic: () -> promiseBreaker(404)
         
             'shouldn\'t raise an exception if the test expects it': (e, res) ->
                 assert.equal(e, 404)
@@ -205,7 +205,7 @@ vows.add
                 'should work the same as returning a value': (res) ->
                     assert.equal(res, 'hello')
 
-    , # New batch
+    , # New Group
         'A Sibling context': 
             '\'A\', with `@foo = true`': 
                 topic: () ->
@@ -222,8 +222,8 @@ vows.add
                 'shouldn\'t have access to `@foo`': (e, res) ->
                     assert.isUndefined(res.foo)
             
-    , # New batch
-        'A 2nd batch': 
+    , # New Group
+        'A 3rd group': 
             topic: () ->
                 promise = new events.EventEmitter
                 setTimeout(() ->
@@ -233,8 +233,8 @@ vows.add
         
             'should run after the first': () ->
 
-    , # New batch
-        'A 3rd batch': 
+    , # New Group
+        'A 4th group': 
             topic: true,
             'should run last': () ->
     ]

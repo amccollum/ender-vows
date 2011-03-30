@@ -1,13 +1,13 @@
-vows = @vows ? require('../index')
-vows.BaseReporter ? require('./base')
+vows = require('vows')
+require('vows/reporters/base')
 
 class vows.SpecReporter extends vows.BaseReporter
     name: 'spec'
     report: (data) ->
         event = data[1]
         switch data[0]
-            when 'subject' then @print("\n♢ #{vows.stylize(event).bold()}\n")
-            when 'context' then @print("  #{event}\n")
+            when 'subject' then @print("\n\n♢ #{vows.stylize(event).bold()}\n")
+            when 'context' then @print("\n  #{event}\n")
             when 'vow' then @print(@_vowEvent(event))
             when 'end' then @print('\n')
             when 'finish' then @print('\n' + @_resultEvent(event))
@@ -18,7 +18,7 @@ class vows.SpecReporter extends vows.BaseReporter
             when 'honored' then vows.stylize("    ✓ #{event.title}\n").success()
             when 'broken'  then vows.stylize("    ✗ #{event.title}\n      » #{event.exception}\n").warning()
             when 'errored' then vows.stylize("    ⊘ #{event.title}\n      » #{event.exception}\n").error()
-            when 'pending' then vows.stylize("    ∴ #{event.title}\n").pending()
+            when 'pending' then vows.stylize("    ∴ #{event.title}\n      » #{event.content}\n").pending()
 
     _resultEvent: (event) ->
         if event.total == 0
@@ -31,7 +31,7 @@ class vows.SpecReporter extends vows.BaseReporter
             when 'honored' then vows.stylize("✓ #{vows.stylize('OK').bold()}").success()
             when 'broken'  then vows.stylize("✗ #{vows.stylize('Broken').bold()}").warning()
             when 'errored' then vows.stylize("⊘ #{vows.stylize('Errored').bold()}").error()
-            when 'pending' then vows.stylize("∵ #{vows.stylize('Pending').bold()}").pending()
+            when 'pending' then vows.stylize("∴ #{vows.stylize('Pending').bold()}").pending()
 
         message = []
         for key in ['honored', 'pending', 'broken', 'errored']

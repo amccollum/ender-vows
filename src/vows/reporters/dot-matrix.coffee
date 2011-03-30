@@ -1,5 +1,5 @@
-vows = @vows ? require('../index')
-vows.SpecReporter ? require('./spec')
+vows = require('vows')
+require('vows/reporters/spec')
 
 class vows.DotMatrixReporter extends vows.SpecReporter
     name: 'dot-matrix'

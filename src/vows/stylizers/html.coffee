@@ -1,5 +1,5 @@
-exports ?= this
-vows.BaseStylizer ? require('./base')
+vows = require('vows')
+require('vows/stylizers/base')
 
 class vows.HTMLStylizer extends vows.Stylizer
     styles: {

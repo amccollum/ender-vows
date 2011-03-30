@@ -1,4 +1,4 @@
-vows = @vows ? require('vows')
+vows = require('vows')
 
 vows.add
     'vows/assert': [

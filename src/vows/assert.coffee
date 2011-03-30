@@ -1,15 +1,17 @@
-assert = @assert ? require('assert')
-vows = @vows ? require('vows')
+assert = require('assert')
+vows = require('vows')
 
 assert.AssertionError.prototype.toString = () ->
-    source = @stack.match(/([a-zA-Z0-9_-]+\.js)(:\d+):\d+/)
+    if @stack
+        source = @stack.match(/([a-zA-Z0-9_-]+\.js)(:\d+):\d+/)
 
     if @message
-        message = @message.replace(/{actual}/g, vows.stringify(@actual))
-                          .replace(/{operator}/g, vows.stylize(@operator).bold())
-                          .replace(/{expected}/g, vows.stringify(@expected))
-                           
-        return vows.stylize(message).warning() + vows.stylize(" // #{source[1]}#{source[2]}").comment()
+        message = vows.stylize(@message.replace(/{actual}/g, vows.stringify(@actual))
+                                       .replace(/{operator}/g, vows.stylize(@operator).bold())
+                                       .replace(/{expected}/g, vows.stringify(@expected))).warning()
+                          
+        line = if source then vows.stylize(" // #{source[1]}#{source[2]}").comment() else ''
+        return message + line
         
     else
         return vows.stylize([@expected, @operator, @actual].join(' ')).warning()

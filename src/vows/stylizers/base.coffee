@@ -1,4 +1,4 @@
-vows = @vows ? require('../index')
+vows = require('vows')
 
 class vows.BaseStylizer
     constructor: (ob) -> @str = '' + ob
@@ -21,8 +21,8 @@ vows.format = (str) ->
 _stack = []
 vows.stringify = (obj) ->
     if obj in _stack
-        before = stack.length - stack.indexOf(obj)
-        return stylize(('.' for i in [0..before]).join(''), 'special')
+        before = _stack.length - _stack.indexOf(obj)
+        return vows.stylize(('.' for i in [0..before]).join(''), 'special')
     
     _stack.push(obj)
     result = switch typeOf(obj)
@@ -38,18 +38,18 @@ vows.stringify = (obj) ->
             obj = obj.replace(/\\/g, '\\\\')
                      .replace(/\n/g, '\\n')
                      .replace(/[\u0001-\u001F]/g, (match) -> '\\0' + match[0].charCodeAt(0).toString(8))
-            stylize(obj, 'string')
+            vows.stylize(obj, 'string')
             
         when 'array'
             pretty = options.pretty and len(obj) > 4 or len(o for o in obj if len(o) > 0)
-            ws = if pretty then '\n' + (' ' for i in [0..4*stack.length]).join('') else ' '
-            contents = (stringify(o) for o in obj).join(ws)
+            ws = if pretty then '\n' + (' ' for i in [0..4*_stack.length]).join('') else ' '
+            contents = (vows.stringify(o) for o in obj).join(ws)
             if contents then "[#{ws}#{contents}#{ws.slice(0, -4)}]" else '[]'
 
         when 'object'
             pretty = options.pretty and len(obj) > 2 or len(o for o in obj and len(o) > 0)
-            ws = if pretty then '\n' + (' ' for i in [0..4*stack.length]).join('') else ' '
-            contents = (stylize(k) + ': ' + stringify(v) for k, v of obj).join(ws)
+            ws = if pretty then '\n' + (' ' for i in [0..4*_stack.length]).join('') else ' '
+            contents = (vows.stylize(k) + ': ' + vows.stringify(v) for k, v of obj).join(ws)
             if contents then "{#{ws}#{contents}#{ws.slice(0, -4)}}" else '{}'
 
     _stack.pop()

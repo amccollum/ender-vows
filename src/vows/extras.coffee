@@ -1,5 +1,5 @@
-events = @events ? require('events')
-vows = @vows ? require('./index')
+events = require('events')
+vows = require('vows')
 
 vows.prepare = (ob, targets) ->
     for target in targets

@@ -1,6 +1,7 @@
-events = @events ? require('events')
-
+events = require('events')
 vows = exports ? (@vows = {})
+
+# simplify things when we're on the server
 require.paths.unshift("#{__dirname}/..") if module?
 require('vows/extras') if module?
 require('vows/assert') if module?
@@ -47,7 +48,7 @@ class vows.Context extends events.EventEmitter
 
     report: (ob) -> vows.report(ob) if not @options.silent
 
-    _expectsError: (fn) -> /^function\s*\w*\s*\(\s*(e|err|error)\s*,/.test(fn)
+    _expectsError: (fn) -> /^function\s*\w*\s*\(\s*(e|err|error)\b/.test(fn)
 
     run: (topics) ->
         @topics = if topics? then Array.prototype.slice.call(topics) else []
@@ -137,6 +138,7 @@ class vows.Context extends events.EventEmitter
                                 child.run(arguments)
                             else
                                 # force the child to error
+                                child.exception = e
                                 child.end('errored')
 
                         child.on 'end', (result) =>
@@ -153,7 +155,11 @@ class vows.Context extends events.EventEmitter
                         @topic = @topics[0]
 
                 else if typeof @topic == 'function'
-                    @topic = @topic.apply(@env, @topics)
+                    try
+                        @topic = @topic.apply(@env, @topics)
+                    catch e
+                        @error(e)
+                        return this
 
                 if @topic?
                     if @topic instanceof events.EventEmitter
@@ -181,6 +187,7 @@ class vows.Context extends events.EventEmitter
             @results[result]++
             @report(['vow', {
                 title: @description,
+                content: @content,
                 context: @parent.description,
                 result: @result,
                 duration: @results.duration,

@@ -1,5 +1,5 @@
-vows = @vows ? require('../index')
-vows.BaseReporter ? require('./base')
+vows = require('vows')
+require('vows/reporters/base')
 
 class vows.JSONReporter extends vows.BaseReporter
     name: 'json'

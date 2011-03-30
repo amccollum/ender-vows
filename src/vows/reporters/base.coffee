@@ -1,4 +1,4 @@
-vows = @vows ? require('../index')
+vows = require('vows')
 
 class vows.BaseReporter
     name: 'silent'

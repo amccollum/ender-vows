@@ -1,5 +1,5 @@
-vows = @vows ? require('../index')
-vows.BaseStylizer ? require('./base')
+vows = require('vows')
+require('vows/stylizers/base')
 
 class vows.ConsoleStylizer extends vows.BaseStylizer
     styles: {
