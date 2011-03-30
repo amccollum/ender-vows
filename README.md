@@ -22,13 +22,14 @@ example
 -------
 
     # browser-compatible imports
-    vows = @vows ? require('vows')
-    assert = @assert ? require('assert')
+    vows = require('vows')
+    assert = require('assert')
 
     class DeepThought
         question: (q) -> 42
 
     vows.add
+        # Add a suite of tests -- lists tell vows to run each item synchronously
         'Deep Thought': [
             'An instance of DeepThought':
                 topic: new DeepThought
@@ -37,6 +38,11 @@ example
                     assert.equal deepThought.question('what is the answer to the universe?'), 42
         ]
         
+browser examples
+----------------
+
+Look in the /example folder to find examples of running vows in the browser.
+
 differences from vows        
 ---------------------
 
@@ -44,9 +50,9 @@ There are some small differences from JavaScript _vows_:
     * only spec, dot-matrix, and json reporters
     * no --watch option for watching test files for changes
     * no automatic test discovery
-    * no regexp matching of tests
     * no ability to reset
     * no per-suite reporters
+    * no ability to report on tests that didn't finish
 
 These things will be fixed when I have time to reimplement them in CoffeeScript.
 
