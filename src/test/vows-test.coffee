@@ -43,7 +43,7 @@ vows.add
                         assert.equal(@state, 42)
                 
                     'has access to the parent context object': (r) ->
-                        assert.ok(Array.isArray(@context.topics))
+                        assert.isArray(@context.topics)
                         assert.include(@context.topics, 'hello world')
     
     

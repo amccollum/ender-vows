@@ -100,7 +100,7 @@ class vows.Context extends events.EventEmitter
                 next.run(@topics)
         
             when 'group'
-                return @end('end') if not Object.keys(@content).length
+                return @end('end') if not (key for key of @content).length
 
                 # capture topic
                 @on 'topic', () =>

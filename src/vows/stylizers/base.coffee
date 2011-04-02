@@ -41,16 +41,24 @@ vows.stringify = (obj) ->
             vows.stylize(obj, 'string')
             
         when 'array'
-            pretty = options.pretty and len(obj) > 4 or len(o for o in obj if len(o) > 0)
-            ws = if pretty then '\n' + (' ' for i in [0..4*_stack.length]).join('') else ' '
-            contents = (vows.stringify(o) for o in obj).join(ws)
-            if contents then "[#{ws}#{contents}#{ws.slice(0, -4)}]" else '[]'
+            pretty = len(obj) > 4 or len(o for o in obj if len(o) > 0)
+            
+            start = if pretty then '\n' + (' ' for i in [0..4*_stack.length]).join('') else ' '
+            end = if pretty then ws.slice(0, -4) else ' '
+            sep = ",#{start}"
+            
+            contents = (vows.stringify(o) for o in obj).join(sep)
+            if contents then "[#{start}#{contents}#{end}]" else '[]'
 
         when 'object'
-            pretty = options.pretty and len(obj) > 2 or len(o for o in obj and len(o) > 0)
-            ws = if pretty then '\n' + (' ' for i in [0..4*_stack.length]).join('') else ' '
-            contents = (vows.stylize(k) + ': ' + vows.stringify(v) for k, v of obj).join(ws)
-            if contents then "{#{ws}#{contents}#{ws.slice(0, -4)}}" else '{}'
+            pretty = len(obj) > 2 or len(o for o in obj and len(o) > 0)
+
+            start = if pretty then '\n' + (' ' for i in [0..4*_stack.length]).join('') else ' '
+            end = if pretty then ws.slice(0, -4) else ' '
+            sep = ",#{start}"
+            
+            contents = (vows.stylize(k).key() + ': ' + vows.stringify(v) for k, v of obj).join(sep)
+            if contents then "{#{start}#{contents}#{end}}" else '{}'
 
     _stack.pop()
     return result

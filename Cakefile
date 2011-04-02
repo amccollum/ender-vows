@@ -2,8 +2,33 @@ fs = require('fs')
 sys = require('sys')
 {spawn, exec} = require('child_process')
 
-task 'build-node', 'Build the vows library for node', ->
-    cmds = [
+execCmds = (cmds) ->
+    exec cmds.join(' && '), (err, stdout, stderr) ->
+        output = (stdout + stderr).trim()
+        console.log(output + '\n') if (output)
+        throw err if err
+
+
+task 'build', 'Run all build tasks', ->
+    execCmds [
+        'cake build-bin',
+        'cake build-lib',
+        'cake build-test',
+        'cake build-example',
+        'cake build-release',
+    ]
+
+
+task 'build-bin', 'Build the vows binary', ->
+    execCmds [
+        'echo "#!/usr/bin/env node" > ./bin/vows',
+        'coffee --compile --bare --print ./src/bin/vows.coffee >> ./bin/vows',
+        'chmod u+x ./bin/vows',
+    ]
+    
+
+task 'build-lib', 'Build the vows library', ->
+    execCmds [
         'coffee --compile --bare --output ./lib/node ./src/node/*.coffee',
         'coffee --compile --bare --output ./lib/vows ./src/vows/*.coffee',
         'coffee --compile --bare --output ./lib/vows/reporters ./src/vows/reporters/*.coffee',
@@ -14,32 +39,20 @@ task 'build-node', 'Build the vows library for node', ->
         'chmod u+x ./bin/vows',
     ]
 
-    exec cmds.join(' && '), (err, stdout, stderr) ->
-        console.log(stdout + stderr) if (stdout or stderr)
-        throw err if err
-
 
 task 'build-test', 'Build the test folder', ->
-    cmds = [
+    execCmds [
         'coffee --compile --bare --output ./test ./src/test/*.coffee',
     ]
 
-    exec cmds.join(' && '), (err, stdout, stderr) ->
-        console.log(stdout + stderr) if (stdout or stderr)
-        throw err if err
-
 
 task 'build-example', 'Build the example folder', ->
-    cmds = [
+    execCmds [
         'coffee --compile --bare --output ./example ./src/example/*.coffee',
         'cp ./src/example/testsuite.html ./example',
         'cp ./src/example/example.html ./example',
         'cp ./src/example/vows.css ./example',
     ]
-
-    exec cmds.join(' && '), (err, stdout, stderr) ->
-        console.log(stdout + stderr) if (stdout or stderr)
-        throw err if err
 
 
 task 'build-release', 'Create a combined package of all sources', ->
@@ -60,11 +73,7 @@ task 'build-release', 'Create a combined package of all sources', ->
         './src/vows/reporters/html-spec.coffee',
     ].join(' ')
     
-    cmds = [
+    execCmds [
         "coffee --compile --join --output ./lib #{sources}",
         'mv ./lib/concatenation.js ./lib/vows.js',
     ]
-
-    exec cmds.join(' && '), (err, stdout, stderr) ->
-        console.log(stdout + stderr) if (stdout or stderr)
-        throw err if err

@@ -44,7 +44,7 @@ assert.includes = assert.include = (actual, expected, message) ->
         assert.fail(actual, expected, message, 'include', assert.include)
 
 assert.isEmpty = (actual, message) ->
-    if not ((isObject(actual) and Object.keys(actual).length == 0) or actual.length == 0)
+    if not ((isObject(actual) and (key for key of actual).length == 0) or actual.length == 0)
         assert.fail(actual, 0, message, 'length', assert.isEmpty)
 
 assert.length = (actual, expected, message) ->
@@ -84,7 +84,7 @@ assertTypeOf = (actual, expected, message, caller) ->
     if typeOf(actual) != expected
         assert.fail(actual, expected, message or 'expected {actual} to be of type {expected}', 'typeOf', caller)
 
-isArray = Array.isArray ? ((obj) -> toString.call(obj) == '[object Array]')
+isArray = Array.isArray ? ((obj) -> Object.prototype.toString.call(obj) == '[object Array]')
 isString = (obj) -> typeof obj == 'string' or obj instanceof String
 isObject = (obj) -> typeof obj == 'object' and obj and !isArray(obj)
 

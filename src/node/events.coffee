@@ -2,7 +2,7 @@
 
 events = exports ? (@events = {})
 
-isArray = Array.isArray ? ((obj) -> toString.call(obj) == '[object Array]')
+isArray = Array.isArray ? ((obj) -> Object.prototype.toString.call(obj) == '[object Array]')
 
 class events.EventEmitter
     emit: (type) ->

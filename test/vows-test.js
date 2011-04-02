@@ -56,7 +56,7 @@ vows.add({
               return assert.equal(this.state, 42);
             },
             'has access to the parent context object': function(r) {
-              assert.ok(Array.isArray(this.context.topics));
+              assert.isArray(this.context.topics);
               return assert.include(this.context.topics, 'hello world');
             }
           }
