@@ -8,7 +8,7 @@ vowPromiser = (description, content, parent) ->
     context = new vows.Context(description, content, parent, { silent: true })
     context.on 'end', () -> promise.emit('success', context)
     setTimeout((() -> context.end('timeout') if context.status == 'begin'), 100)
-    setTimeout((() -> context.run()), 1)
+    process.nextTick () -> context.run()
     return promise
 
 

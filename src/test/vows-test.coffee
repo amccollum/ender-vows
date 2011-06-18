@@ -1,24 +1,24 @@
-vows = require('vows')
-events = require('events')
 assert = require('assert')
+events = require('events')
 fs = require('fs')
 
+vows = require('vows')
 
 api = vows.prepare({
-    get: (id, callback) -> setTimeout((() -> callback(null, id)), 1)
+    get: (id, callback) -> process.nextTick () -> callback(null, id)
     version: () -> '1.0'
 }, ['get'])
 
 promiser = () ->
     args = Array.prototype.slice.call(arguments)
     promise = new events.EventEmitter
-    setTimeout((() -> promise.emit.apply(promise, ['success'].concat(args))), 1)
+    process.nextTick () -> promise.emit.apply(promise, ['success'].concat(args))
     return promise
 
 promiseBreaker = (val) ->
     args = Array.prototype.slice.call(arguments)
     promise = new events.EventEmitter
-    setTimeout((() -> promise.emit.apply(promise, ['error'].concat(args))), 1)
+    process.nextTick () -> promise.emit.apply(promise, ['error'].concat(args))
     return promise
 
 
@@ -175,7 +175,7 @@ vows.add
         'A topic with callback-style async': 
             'when successful': 
                 topic: () -> 
-                    setTimeout((() => @callback(null, 'OK')), 1)
+                    process.nextTick () => @callback(null, 'OK')
                     return
             
                 'should work like an event-emitter': (res) ->
@@ -188,7 +188,7 @@ vows.add
         
             'when unsuccessful': 
                 topic: () -> ((callback) ->
-                        setTimeout((() -> callback('ERROR')), 1)
+                        process.nextTick () -> callback('ERROR')
                         return
                     )(@callback)
             
