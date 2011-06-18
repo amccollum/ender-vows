@@ -60,6 +60,9 @@ task 'build-release', 'Create a combined package of all sources', ->
         './src/node/assert.coffee',
         './src/node/events.coffee',
         './src/node/require.coffee',
+        './src/node/streams.coffee',
+        './src/node/process.coffee',
+        
         './src/vows/index.coffee',
         './src/vows/extras.coffee',
         './src/vows/assert.coffee',
