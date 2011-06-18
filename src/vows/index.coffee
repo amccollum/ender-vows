@@ -89,15 +89,21 @@ class vows.Context extends events.EventEmitter
                 return @end('done') if not @content.length
                 
                 # run each item synchronously
-                children = @content.slice()
-                next = new vows.Context(null, children.pop(), this)
-                next.on 'end', () => @end('done')
-                
-                while children.length
-                    next = new vows.Context(null, children.pop(), this)
-                               .on 'end', do (next) -> () -> next.run(topics)
+                batch = @content.slice()
+                while batch.length
+                    cur = batch.pop()
+                    if cur not instanceof vows.Context
+                        cur = new vows.Context(null, cur, this)
+                    
+                    if next?
+                        cur.on 'end', do (next) -> () -> next.run(topics)
+                    else
+                        # base case: end after the last child context ends
+                        cur.on 'end', () => @end('done')
+                    
+                    next = cur
 
-                next.run(@topics)
+                cur.run(@topics)
         
             when 'group'
                 return @end('end') if not (key for key of @content).length
@@ -124,7 +130,9 @@ class vows.Context extends events.EventEmitter
                             @on 'run', () =>
                                 context = this
                                 parts = [@description]
-                                parts.unshift(context.description) while (context = context.parent) and context.description
+                                while (context = context.parent) and context.description
+                                    parts.unshift(context.description)
+                                
                                 @report(['context', parts.join(' ')])
                     
                         @on 'topic', () =>
@@ -137,11 +145,12 @@ class vows.Context extends events.EventEmitter
                             if child.type == 'test' and @_expectsError(child.content)
                                 child.run(arguments)
                             else
-                                # force the child to error
+                                # unexpected error
                                 child.exception = e
                                 child.end('errored')
 
                         child.on 'end', (result) =>
+                            # end if this was the last test of the group
                             @end('done') if not --@results.running
 
                 # teardown
