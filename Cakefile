@@ -34,7 +34,7 @@ task 'build-lib', 'Build the vows library', ->
         'coffee --compile --bare --output ./lib/vows/reporters ./src/vows/reporters/*.coffee',
         'coffee --compile --bare --output ./lib/vows/stylizers ./src/vows/stylizers/*.coffee',
 
-        'echo '#!/usr/bin/env node' > ./bin/vows',
+        'echo \'#!/usr/bin/env node\' > ./bin/vows',
         'coffee --compile --bare --print ./src/bin/vows.coffee >> ./bin/vows',
         'chmod u+x ./bin/vows',
     ]
@@ -76,7 +76,7 @@ task 'build-release', 'Create a combined package of all sources', ->
         './src/vows/reporters/html-spec.coffee',
     ].join(' ')
     
+    #console.log(sources)
     execCmds [
-        "coffee --compile --join --output ./lib #{sources}",
-        'mv ./lib/concatenation.js ./lib/vows.js',
+        "coffee --compile --join ./lib/vows-0.1.0.js #{sources}",
     ]
