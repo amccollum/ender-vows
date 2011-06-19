@@ -7,9 +7,13 @@ require('vows/extras') if module?
 require('vows/assert') if module?
 
 # external API
-vows.version = '0.0.1'
-vows.describe = (description) -> new vows.Suite(description, Array.prototype.slice.call(arguments, 1))
-vows.add = (suite) -> vows.runner.add(suite)
+vows.version = '0.1.0'
+vows.add = (description, tests) ->
+    suite = new vows.Context(description, tests)
+    vows.runner.add(suite)
+    return suite
+    
+vows.describe = (description) -> vows.add(description, Array.prototype.slice.call(arguments, 1))
 vows.run = () -> vows.runner.run()
 vows.report = () -> vows.reporter.report.apply(vows.reporter, arguments) if vows.reporter
 
@@ -33,7 +37,7 @@ class vows.Context extends events.EventEmitter
             when 'string' then @type = 'comment'
             when 'function' then @type = 'test'
             when 'object' then @type = (if @content.length? then 'batch' else 'group')
-            else @type = null
+            else throw new Error('Unkown content type')
 
         @status = null
         @exception = null
@@ -54,6 +58,9 @@ class vows.Context extends events.EventEmitter
         @topics = if topics? then Array.prototype.slice.call(topics) else []
         @emit(@status = 'begin')
         @results.startDate = new Date
+
+        if @parent == vows.runner
+            @report(['subject', @description]) if @description
 
         # create the environment, inherited from the parent environment
         context = this
@@ -85,14 +92,15 @@ class vows.Context extends events.EventEmitter
                         @end('errored')
              
             when 'batch'
-                @report(['subject', @description]) if @description
                 return @end('done') if not @content.length
                 
                 # run each item synchronously
                 batch = @content.slice()
                 while batch.length
                     cur = batch.pop()
-                    if cur not instanceof vows.Context
+                    if cur instanceof vows.Context
+                        cur.parent = this
+                    else
                         cur = new vows.Context(null, cur, this)
                     
                     if next?
@@ -130,8 +138,8 @@ class vows.Context extends events.EventEmitter
                             @on 'run', () =>
                                 context = this
                                 parts = [@description]
-                                while (context = context.parent) and context.description
-                                    parts.unshift(context.description)
+                                while (context = context.parent) and context.parent != vows.runner
+                                    parts.unshift(context.description) if context.description
                                 
                                 @report(['context', parts.join(' ')])
                     
@@ -240,31 +248,31 @@ class vows.Context extends events.EventEmitter
         # prevent CoffeeScript from returning a value
         return
 
+    add: (tests) ->
+        switch @type
+            when 'batch'
+                if typeof tests == 'object' and tests.length?
+                    @content = @content.concat(tests)
+                else
+                    @content.push(tests)
+                    
+            when 'group'
+                for key, value of tests
+                    @content[key] = value
+            
+            else throw new Error('Can\'t add to tests or comments')
 
-# Compatibility with regular vows
-class vows.Suite
-    constructor: (description, content) ->
-        @suite = {}
-        @content = content ? []
-        @suite[description] = @content
-        vows.add(@suite)
-    
-    addBatch: (tests) ->
-        @content.push(tests)
         return this
-        
-    export: (module, options) ->
-        if module? and require.main == module
-            return vows.run()
-        else
-            return module.exports[@description] = this
 
+    # Compatibility with regular vows
+    export: (module, options) ->
+        return module.exports[@description] = this
+            
     @::exportTo = @::export
+    @::addBatch = @::add
 
 
 class vows.Runner extends vows.Context
-    constructor: () -> super(null, [])
-    add: (suite) -> @content.push(suite)
     run: (callback) ->
         @on 'end', () =>
             @results.dropped = @results.total - (@results.honored + @results.pending +
@@ -275,6 +283,6 @@ class vows.Runner extends vows.Context
             
         return super()
 
-vows.runner = new vows.Runner()
+vows.runner = new vows.Runner(null, [])
 
 #process.on 'exit', () -> debugger

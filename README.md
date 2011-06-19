@@ -27,15 +27,12 @@ example
     class DeepThought
         question: (q) -> 42
 
-    vows.add
-        # Add a suite of tests -- lists tell vows to run each item synchronously
-        'Deep Thought': [
-            'An instance of DeepThought':
-                topic: new DeepThought
+    vows.add 'Deep Thought'
+        'An instance of DeepThought':
+            topic: new DeepThought
 
-                'should know the answer to the ultimate question of life': (deepThought) ->
-                    assert.equal deepThought.question('what is the answer to the universe?'), 42
-        ]
+            'should know the answer to the ultimate question of life': (deepThought) ->
+                assert.equal deepThought.question('what is the answer to the universe?'), 42
         
 browser examples
 ----------------

@@ -29,7 +29,7 @@ _nextTickCallback = () ->
     catch e
         _nextTickQueue.splice(0, i+1)
         if _nextTickQueue.length
-            setTimeout(_nextTickCallback, 0)
+            setTimeout(_nextTickCallback, 1)
             
         throw e
     
@@ -38,4 +38,4 @@ _nextTickCallback = () ->
 process.nextTick = (callback) ->
     _nextTickQueue.push(callback)
     if _nextTickQueue.length == 1
-        setTimeout(_nextTickCallback, 0)
+        setTimeout(_nextTickCallback, 1)

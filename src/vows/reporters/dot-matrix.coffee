@@ -22,8 +22,7 @@ class vows.DotMatrixReporter extends vows.SpecReporter
                             @messages.push("  #{event.context}")
 
                         @print(vows.stylize('✗', if event.result == 'broken' then 'warning' else 'error'))
-                        @messages = @messages.concat(@_vowEvent(event))
-                        @messages.push('')
+                        @messages.push(@_vowEvent(event))
                         
             when 'end' then @print(' ')
             when 'finish' 
@@ -32,9 +31,9 @@ class vows.DotMatrixReporter extends vows.SpecReporter
                 else
                     @print('\n')
 
-                @print(@_resultEvent(event).join('\n') + '\n')
+                @print(@_resultEvent(event) + '\n')
 
-            when 'error' then @print(@_errorEvent(event).join('\n'))
+            when 'error' then @print(@_errorEvent(event))
 
 
 vows.reporter = new vows.DotMatrixReporter
