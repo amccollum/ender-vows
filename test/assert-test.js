@@ -1,8 +1,8 @@
-var vows, _ref;
+var vows;
 vows = require('vows');
 vows.add('vows/assert', {
   'The Assertion module': {
-    topic: (_ref = this.assert) != null ? _ref : require('assert'),
+    topic: require('assert'),
     '`equal`': function(assert) {
       assert.equal('hello world', 'hello world');
       return assert.equal(1, true);

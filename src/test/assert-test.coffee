@@ -2,7 +2,7 @@ vows = require('vows')
 
 vows.add 'vows/assert'
     'The Assertion module':
-        topic: @assert ? require('assert')
+        topic: require('assert')
 
         '`equal`': (assert) ->
             assert.equal('hello world', 'hello world')
