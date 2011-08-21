@@ -19,18 +19,18 @@ vows.add 'Vows Errors'
         })
         
         'should have a pending result': (context) ->
-            assert.equal(context.results['total'], 1)
-            assert.equal(context.results['pending'], 1)
+            assert.equal context.results['total'], 1 
+            assert.equal context.results['pending'], 1 
 
     'A test failing an assertion': 
         topic: () -> vowPromiser('A test', {
             topic: false
-            'failing an assertion': (topic) -> assert.equal(topic, true)
+            'failing an assertion': (topic) -> assert.equal topic, true 
         })
         
         'should have a broken result': (context) ->
-            assert.equal(context.results['total'], 1)
-            assert.equal(context.results['broken'], 1)
+            assert.equal context.results['total'], 1 
+            assert.equal context.results['broken'], 1 
 
     'A test throwing an error': 
         topic: () -> vowPromiser('A test', {
@@ -39,33 +39,48 @@ vows.add 'Vows Errors'
         })
         
         'should have an errored result': (context) ->
-            assert.equal(context.results['total'], 1)
-            assert.equal(context.results['errored'], 1)
+            assert.equal context.results['total'], 1 
+            assert.equal context.results['errored'], 1 
 
-    'A topic throwing an error': 
+    'A topic synchronously throwing an error': 
         topic: () -> vowPromiser('A test', {
-            topic: () -> @error('This is an error!')
-            'not expecting an error': (topic) -> assert.ok(true) 
-            'expecting an error': (err, topic) -> assert.ok(true) 
+            topic: () -> throw new Error('This is an error!')
+            'not expecting an error': (topic) -> assert.ok true  
+            'expecting an error': (err, topic) -> assert.ok true  
         })
         
         'should error its tests that don\'t expect the error': (context) ->
-            assert.equal(context.results['total'], 2)
-            assert.equal(context.results['errored'], 1)
+            assert.equal context.results['total'], 2 
+            assert.equal context.results['errored'], 1 
 
         'should pass its tests that do expect the error': (context) ->
-            assert.equal(context.results['total'], 2)
-            assert.equal(context.results['honored'], 1)
+            assert.equal context.results['total'], 2 
+            assert.equal context.results['honored'], 1 
 
-    'A test that never runs its callback': 
+    'A topic asynchronously throwing an error': 
+        topic: () -> vowPromiser('A test', {
+            topic: () -> process.nextTick () => @error('This is an error!')
+            'not expecting an error': (topic) -> assert.ok true  
+            'expecting an error': (err, topic) -> assert.ok true  
+        })
+        
+        'should error its tests that don\'t expect the error': (context) ->
+            assert.equal context.results['total'], 2 
+            assert.equal context.results['errored'], 1 
+
+        'should pass its tests that do expect the error': (context) ->
+            assert.equal context.results['total'], 2 
+            assert.equal context.results['honored'], 1 
+
+    'A test that never calls its callback': 
         topic: () -> vowPromiser('A test', {
             topic: () -> return
-            'that never runs its callback': (topic) -> assert.ok(null)
+            'that never calls its callback': (topic) -> assert.ok null 
         })
         
         'should timeout': (context) ->
-            assert.equal(context.result, 'timeout')
+            assert.equal context.result, 'timeout' 
         
         'should still be running': (context) ->
-            assert.equal(context.results['running'], 1)
-            assert.equal(context.results['total'], 0)
+            assert.equal context.results['running'], 1 
+            assert.equal context.results['total'], 0 

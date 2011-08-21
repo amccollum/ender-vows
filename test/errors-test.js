@@ -1,4 +1,5 @@
 var assert, events, vowPromiser, vows;
+var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 vows = require('vows');
 events = require('events');
 assert = require('assert');
@@ -61,11 +62,11 @@ vows.add('Vows Errors', {
       return assert.equal(context.results['errored'], 1);
     }
   },
-  'A topic throwing an error': {
+  'A topic synchronously throwing an error': {
     topic: function() {
       return vowPromiser('A test', {
         topic: function() {
-          return this.error('This is an error!');
+          throw new Error('This is an error!');
         },
         'not expecting an error': function(topic) {
           return assert.ok(true);
@@ -84,11 +85,36 @@ vows.add('Vows Errors', {
       return assert.equal(context.results['honored'], 1);
     }
   },
-  'A test that never runs its callback': {
+  'A topic asynchronously throwing an error': {
+    topic: function() {
+      return vowPromiser('A test', {
+        topic: function() {
+          return process.nextTick(__bind(function() {
+            return this.error('This is an error!');
+          }, this));
+        },
+        'not expecting an error': function(topic) {
+          return assert.ok(true);
+        },
+        'expecting an error': function(err, topic) {
+          return assert.ok(true);
+        }
+      });
+    },
+    'should error its tests that don\'t expect the error': function(context) {
+      assert.equal(context.results['total'], 2);
+      return assert.equal(context.results['errored'], 1);
+    },
+    'should pass its tests that do expect the error': function(context) {
+      assert.equal(context.results['total'], 2);
+      return assert.equal(context.results['honored'], 1);
+    }
+  },
+  'A test that never calls its callback': {
     topic: function() {
       return vowPromiser('A test', {
         topic: function() {},
-        'that never runs its callback': function(topic) {
+        'that never calls its callback': function(topic) {
           return assert.ok(null);
         }
       });

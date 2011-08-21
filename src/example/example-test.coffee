@@ -1,5 +1,5 @@
-vows = require('vows')
 assert = require('assert')
+vows = require('vows')
 
 # Adding a test suite
 vows.add 'Division by Zero'

@@ -1,19 +1,9 @@
-var api, assert, events, fs, promiseBreaker, promiser, vows;
+var assert, events, fs, promiseBreaker, promiser, vows;
 var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 assert = require('assert');
 events = require('events');
 fs = require('fs');
 vows = require('vows');
-api = vows.prepare({
-  get: function(id, callback) {
-    return process.nextTick(function() {
-      return callback(null, id);
-    });
-  },
-  version: function() {
-    return '1.0';
-  }
-}, ['get']);
 promiser = function() {
   var args, promise;
   args = Array.prototype.slice.call(arguments);
@@ -146,24 +136,6 @@ vows.add('Vows', [
       },
       'should be converted to a promise': function(val) {
         return assert.equal(val, 1);
-      }
-    },
-    'A \'prepared\' interface': {
-      'with a wrapped function': {
-        topic: function() {
-          return api.get(42);
-        },
-        'should work as expected': function(val) {
-          return assert.equal(val, 42);
-        }
-      },
-      'with a non-wrapped function': {
-        topic: function() {
-          return api.version();
-        },
-        'should work as expected': function(val) {
-          return assert.equal(val, '1.0');
-        }
       }
     },
     'A non-function topic': {

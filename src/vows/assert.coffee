@@ -1,7 +1,9 @@
 assert = require('assert')
-vows = require('vows')
 
 assert.AssertionError.prototype.toString = () ->
+    # prevent circular dependency
+    vows = require('vows')
+
     if @stack
         source = @stack.match(/([a-zA-Z0-9_-]+\.js)(:\d+):\d+/)
 

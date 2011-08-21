@@ -1,6 +1,6 @@
 var assert, vows;
-vows = require('vows');
 assert = require('assert');
+vows = require('vows');
 vows.add('Division by Zero', {
   'when dividing a number by zero': {
     topic: function() {

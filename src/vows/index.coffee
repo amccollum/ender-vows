@@ -1,11 +1,6 @@
 events = require('events')
 vows = exports ? (@vows = {})
 
-# simplify things when we're on the server
-require.paths.unshift("#{__dirname}/..") if module?
-require('vows/extras') if module?
-require('vows/assert') if module?
-
 # external API
 vows.version = '0.1.0'
 vows.add = (description, tests) ->
@@ -16,6 +11,11 @@ vows.add = (description, tests) ->
 vows.describe = (description) -> vows.add(description, Array.prototype.slice.call(arguments, 1))
 vows.run = () -> vows.runner.run()
 vows.report = () -> vows.reporter.report.apply(vows.reporter, arguments) if vows.reporter
+
+class vows.VowsError extends Error
+    constructor: (@context, @message) -> 
+        @message = "#{@context.description}: #{@message}"
+    toString: () -> "#{@context.description}: #{@message}"
 
 
 class vows.Context extends events.EventEmitter
@@ -37,7 +37,7 @@ class vows.Context extends events.EventEmitter
             when 'string' then @type = 'comment'
             when 'function' then @type = 'test'
             when 'object' then @type = (if @content.length? then 'batch' else 'group')
-            else throw new Error('Unkown content type')
+            else throw new vows.VowsError(this, 'Unkown content type')
 
         @status = null
         @exception = null
@@ -125,7 +125,7 @@ class vows.Context extends events.EventEmitter
                 # setup the next level
                 hasTests = false
                 for key, value of @content
-                    continue if key in ['topic', 'teardown']
+                    continue if key in ['topic', 'async', 'teardown']
                     child = new vows.Context(key, value, this)
                     continue if not child.matched
                     
@@ -174,26 +174,34 @@ class vows.Context extends events.EventEmitter
                 else if typeof @topic == 'function'
                     try
                         @topic = @topic.apply(@env, @topics)
+                        if @content.async or not @topic?
+                            # ignore return value
+                            @topic = null
+                            
                     catch e
                         @error(e)
                         return this
 
                 if @topic?
                     if @topic instanceof events.EventEmitter
+                        @async = true
                         @topic.on 'success', () => @success.apply(this, arguments)
                         @topic.on 'error', () => @error.apply(this, arguments)
-                        async = true
                     else
+                        @async = false
                         @success(@topic)
-                        
-                else if not @content.topic?
+                
+                else if @content.topic?
+                    @async = true
+                
+                else
                     @success()
 
         return this
 
     end: (result) ->
         if @status in ['end']
-            throw new Error('The \'end\' event was triggered twice')
+            throw new vows.VowsError(this, 'The \'end\' event was triggered twice')
             
         @result = result
         @results.endDate = new Date
@@ -230,7 +238,10 @@ class vows.Context extends events.EventEmitter
         
     callback: () =>
         if @status in ['run', 'end']
-            throw new Error('The callback was called twice. Did an asynchronous callback return a value?')
+            if @async
+                throw new vows.VowsError(this, 'An asynchronous callback was made after a value was returned.')
+            else
+                throw new vows.VowsError(this, 'An asynchronous callback was made twice.')
 
         @emit(@status = 'run')
         args = Array.prototype.slice.call(arguments)
@@ -260,7 +271,7 @@ class vows.Context extends events.EventEmitter
                 for key, value of tests
                     @content[key] = value
             
-            else throw new Error('Can\'t add to tests or comments')
+            else throw new vows.VowsError(this, 'Can\'t add to tests or comments')
 
         return this
 
@@ -284,5 +295,11 @@ class vows.Runner extends vows.Context
         return super()
 
 vows.runner = new vows.Runner(null, [])
+
+# include the auxiliary modules when we're on the server
+if exports?
+    #require('./extras')
+    require('./assert')
+
 
 #process.on 'exit', () -> debugger

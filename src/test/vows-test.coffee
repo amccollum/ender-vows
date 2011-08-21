@@ -4,11 +4,6 @@ fs = require('fs')
 
 vows = require('vows')
 
-api = vows.prepare({
-    get: (id, callback) -> process.nextTick () -> callback(null, id)
-    version: () -> '1.0'
-}, ['get'])
-
 promiser = () ->
     args = Array.prototype.slice.call(arguments)
     promise = new events.EventEmitter
@@ -111,18 +106,6 @@ vows.add 'Vows', [
             topic: () -> 1 
             'should be converted to a promise': (val) ->
                 assert.equal(val, 1)
-
-
-        'A \'prepared\' interface': 
-            'with a wrapped function': 
-                topic: () -> api.get(42) 
-                'should work as expected': (val) ->
-                    assert.equal(val, 42)
-        
-            'with a non-wrapped function': 
-                topic: () -> api.version() 
-                'should work as expected': (val) ->
-                    assert.equal(val, '1.0')
 
 
         'A non-function topic': 

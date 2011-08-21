@@ -25,9 +25,9 @@ class vows.DotMatrixReporter extends vows.SpecReporter
                         @messages.push(@_vowEvent(event))
                         
             when 'end' then @print(' ')
-            when 'finish' 
+            when 'finish'
                 if @messages.length
-                    @print('\n\n' + messages.join('\n'))
+                    @print('\n\n' + @messages.join('\n') + '\n')
                 else
                     @print('\n')
 
