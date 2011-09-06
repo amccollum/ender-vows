@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-var arg, args, argv, coffee, events, f, fileExt, files, fs, help, path, util, vows, _i, _len;
+var arg, args, argv, coffee, events, f, fileExt, files, fs, help, path, report, stylize, util, vows, _i, _len;
 path = require('path');
 fs = require('fs');
 util = require('util');
@@ -10,9 +10,9 @@ try {
 } catch (e) {
   fileExt = /\.js$/;
 }
-require.paths.unshift(path.join(__dirname, '..', 'lib'));
-vows = require('vows');
-require('vows/stylizers/console');
+vows = require('../lib/vows');
+report = require('../lib/vows/report');
+stylize = require('../lib/vows/stylize');
 help = ['usage: vows [FILE, ...] [options]', '', 'options:', '  -s, --silent      Don\'t report', '  --json            Use JSON reporter', '  --spec            Use Spec reporter', '  --dot-matrix      Use Dot-Matrix reporter', '  --version         Show version', '  -h, --help        You\'re staring at it'].join('\n');
 args = [];
 argv = process.argv.slice(2);
@@ -25,17 +25,20 @@ while ((arg = argv.shift())) {
   } else {
     switch (arg.match(/^--?(.+)/)[1]) {
       case 'json':
-        require('vows/reporters/json');
+        report.reporter = new report.JSONReporter;
         break;
       case 'spec':
-        require('vows/reporters/spec');
+        report.reporter = new report.SpecReporter;
         break;
       case 'dot-matrix':
-        require('vows/reporters/dot-matrix');
+        report.reporter = new report.DotMatrixReporter;
+        break;
+      case 'html-spec':
+        report.reporter = new report.HTMLSpecReporter;
         break;
       case 'silent':
       case 's':
-        require('vows/reporters/base');
+        report.reporter = new report.BaseReporter;
         break;
       case 'version':
         console.log('vows ' + vows.version);
@@ -48,9 +51,10 @@ while ((arg = argv.shift())) {
     }
   }
 }
-if (!(vows.reporter != null)) {
-  require('vows/reporters/dot-matrix');
+if (!(report.reporter != null)) {
+  report.reporter = new report.DotMatrixReporter;
 }
+stylize.Stylizer = stylize.ConsoleStylizer;
 files = (function() {
   var _i, _len, _results;
   _results = [];
@@ -68,7 +72,7 @@ vows.runner.on('end', function() {
   var results, status;
   results = vows.runner.results;
   status = (results.errored && 2) || (results.broken && 1) || 0;
-  vows.report(['finish', results]);
+  report.report(['finish', results]);
   if (process.stdout.write('')) {
     return process.exit(status);
   } else {

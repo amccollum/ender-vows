@@ -1,5 +1,6 @@
-var vows;
-vows = require('vows');
+var assert, vows;
+assert = require('assert');
+vows = require('../lib/vows');
 vows.add('vows/assert', {
   'The Assertion module': {
     topic: require('assert'),

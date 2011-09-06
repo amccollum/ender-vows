@@ -2,6 +2,8 @@ fs = require('fs')
 sys = require('sys')
 {spawn, exec} = require('child_process')
 
+package = JSON.parse(fs.readFileSync('package.json', 'utf8'))
+
 execCmds = (cmds) ->
     exec cmds.join(' && '), (err, stdout, stderr) ->
         output = (stdout + stderr).trim()
@@ -15,7 +17,6 @@ task 'build', 'Run all build tasks', ->
         'cake build-lib',
         'cake build-test',
         'cake build-example',
-        'cake build-release',
     ]
 
 
@@ -29,14 +30,9 @@ task 'build-bin', 'Build the vows binary', ->
 
 task 'build-lib', 'Build the vows library', ->
     execCmds [
-        'coffee --compile --bare --output ./lib/node ./src/node/*.coffee',
         'coffee --compile --bare --output ./lib/vows ./src/vows/*.coffee',
-        'coffee --compile --bare --output ./lib/vows/reporters ./src/vows/reporters/*.coffee',
-        'coffee --compile --bare --output ./lib/vows/stylizers ./src/vows/stylizers/*.coffee',
-
-        'echo \'#!/usr/bin/env node\' > ./bin/vows',
-        'coffee --compile --bare --print ./src/bin/vows.coffee >> ./bin/vows',
-        'chmod u+x ./bin/vows',
+        #'coffee --compile --bare --output ./lib/vows/reporters ./src/vows/reporters/*.coffee',
+        #'coffee --compile --bare --output ./lib/vows/stylizers ./src/vows/stylizers/*.coffee',
     ]
 
 
@@ -57,26 +53,20 @@ task 'build-example', 'Build the example folder', ->
 
 task 'build-release', 'Create a combined package of all sources', ->
     sources = [
-        './src/node/assert.coffee',
-        './src/node/events.coffee',
-        './src/node/require.coffee',
-        './src/node/streams.coffee',
-        './src/node/process.coffee',
+        './node_modules/node-compat/src/node-compat/require.coffee',
+        './node_modules/node-compat/src/node-compat/assert.coffee',
+        './node_modules/node-compat/src/node-compat/events.coffee',
+        './node_modules/node-compat/src/node-compat/streams.coffee',
+        './node_modules/node-compat/src/node-compat/process.coffee',
         
         './src/vows/index.coffee',
-        './src/vows/extras.coffee',
         './src/vows/assert.coffee',
         
-        './src/vows/stylizers/base.coffee',
-        './src/vows/stylizers/html.coffee',
-        
-        './src/vows/reporters/base.coffee',
-        './src/vows/reporters/json.coffee',
-        './src/vows/reporters/spec.coffee',
-        './src/vows/reporters/html-spec.coffee',
+        './src/vows/report.coffee',
+        './src/vows/stylize.coffee',
     ].join(' ')
     
     #console.log(sources)
     execCmds [
-        "coffee --compile --join ./lib/vows-0.1.0.js #{sources}",
+        "coffee --compile --join ./lib/vows-#{package.version}.js #{sources}",
     ]

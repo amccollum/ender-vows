@@ -3,7 +3,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
 assert = require('assert');
 events = require('events');
 fs = require('fs');
-vows = require('vows');
+vows = require('../lib/vows');
 promiser = function() {
   var args, promise;
   args = Array.prototype.slice.call(arguments);
@@ -110,7 +110,7 @@ vows.add('Vows', [
         }
       }
     },
-    'A Nested context with topic gaps': {
+    'A nested context with topic gaps': {
       topic: 45,
       '.': {
         '.': {

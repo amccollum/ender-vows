@@ -1,8 +1,8 @@
 var assert, events, vowPromiser, vows;
 var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
-vows = require('vows');
 events = require('events');
 assert = require('assert');
+vows = require('../lib/vows');
 vowPromiser = function(description, content, parent) {
   var context, promise;
   promise = new events.EventEmitter;

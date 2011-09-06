@@ -1,45 +1,26 @@
 {
     "name": "vows",
     "version": "0.1.0",
-    "description": "Asynchronous BDD & continuous integration for node.js",
-    "url": "http://github.com/amccollum/vows-coffee",
+    "description": "Asynchronous BDD & continuous integration for node.js and the browser",
     "author": "Andrew McCollum <amccollum@gmail.com>",
-
-    "bugs": {
-        "web": "http://github.com/amccollum/vows-coffee/issues" 
-    },
-    
-    "licenses": [
-        {
-            "type": "MIT",
-            "url": "http://opensource.org/licenses/mit-license.php" 
-        } 
-    ],
-    
-    "repositories": [
-        {
-            "type": "git",
-            "url": "git://github.com/amccollum/vows-coffee" 
-        } 
-    ],
+    "url": "http://github.com/amccollum/vows-coffee",
+    "bugs": { "web": "http://github.com/amccollum/vows-coffee/issues" },
+    "repositories": [{ "type": "git", "url": "git://github.com/amccollum/vows-coffee" }],
+    "licenses": [{ "type": "MIT", "url": "http://opensource.org/licenses/mit-license.php" }],
     
     "main": "index",
-    "bin": {
-        "vows": "./bin/vows"
-    },
+    "bin": { "vows": "bin/vows" },
     
     "directories": {
-        "lib": "./lib",
-        "test": "./test",
-        "example": "./example"
+        "lib": "lib",
+        "test": "test",
+        "example": "example"
     },
     
-    "dependencies": {},
     "devDependencies": {
-         "coffee-script": "*"
+        "coffee-script": "*",
+        "node-compat": "*"
     },
     
-    "engines": {
-        "node": ">=0.4.0"
-    }
+    "engines": { "node": "*" }
 }

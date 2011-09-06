@@ -1,22 +1,21 @@
 assert = require('assert')
+stylize = require('./stylize')
+
 
 assert.AssertionError.prototype.toString = () ->
-    # prevent circular dependency
-    vows = require('vows')
-
     if @stack
         source = @stack.match(/([a-zA-Z0-9_-]+\.js)(:\d+):\d+/)
 
     if @message
-        message = vows.stylize(@message.replace(/{actual}/g, vows.stringify(@actual))
-                                       .replace(/{operator}/g, vows.stylize(@operator).bold())
-                                       .replace(/{expected}/g, vows.stringify(@expected))).warning()
+        message = stylize.stylize(@message.replace(/{actual}/g, stylize.stringify(@actual))
+                                          .replace(/{operator}/g, stylize.stylize(@operator).bold())
+                                          .replace(/{expected}/g, stylize.stringify(@expected))).warning()
                           
-        line = if source then vows.stylize(" // #{source[1]}#{source[2]}").comment() else ''
+        line = if source then stylize.stylize(" // #{source[1]}#{source[2]}").comment() else ''
         return message + line
         
     else
-        return vows.stylize([@expected, @operator, @actual].join(' ')).warning()
+        return stylize.stylize([@expected, @operator, @actual].join(' ')).warning()
 
 
 assert.matches = assert.match = (actual, expected, message) ->

@@ -1,4 +1,5 @@
 events = require('events')
+report = require('./report')
 vows = exports ? (@vows = {})
 
 # external API
@@ -10,7 +11,6 @@ vows.add = (description, tests) ->
     
 vows.describe = (description) -> vows.add(description, Array.prototype.slice.call(arguments, 1))
 vows.run = () -> vows.runner.run()
-vows.report = () -> vows.reporter.report.apply(vows.reporter, arguments) if vows.reporter
 
 class vows.VowsError extends Error
     constructor: (@context, @message) -> 
@@ -37,7 +37,7 @@ class vows.Context extends events.EventEmitter
             when 'string' then @type = 'comment'
             when 'function' then @type = 'test'
             when 'object' then @type = (if @content.length? then 'batch' else 'group')
-            else throw new vows.VowsError(this, 'Unkown content type')
+            else throw new vows.VowsError(this, 'Unknown content type')
 
         @status = null
         @exception = null
@@ -50,7 +50,7 @@ class vows.Context extends events.EventEmitter
         for key in ['total', 'running', 'honored', 'pending', 'broken', 'errored']
             @results[key] = 0
 
-    report: (ob) -> vows.report(ob) if not @options.silent
+    report: (ob) -> report.report(ob) if not @options.silent
 
     _expectsError: (fn) -> /^function\s*\w*\s*\(\s*(e|err|error)\b/.test(fn)
 

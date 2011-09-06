@@ -17,6 +17,9 @@
     
     <!-- Run the Tests -->
     <script type="text/javascript">
+        stylize.Stylizer = stylize.HTMLStylizer;
+        report.reporter = new report.HTMLSpecReporter;
+        
         $(document).ready(function () { vows.run() });
     </script>
 </head>

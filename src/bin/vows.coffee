@@ -10,10 +10,9 @@ try
 catch e
     fileExt     = /\.js$/
 
-
-require.paths.unshift(path.join(__dirname, '..', 'lib'))
-vows = require('vows')
-require('vows/stylizers/console')
+vows = require('../lib/vows')
+report = require('../lib/vows/report')
+stylize = require('../lib/vows/stylize')
 
 help = [
     'usage: vows [FILE, ...] [options]',
@@ -22,7 +21,7 @@ help = [
     '  -s, --silent      Don\'t report',
     '  --json            Use JSON reporter',
     '  --spec            Use Spec reporter',
-    '  --dot-matrix      Use Dot-Matrix reporter',
+    '  --dot-matrix      Use Dot-Matrix reporter (default)',
     '  --version         Show version',
     '  -h, --help        You\'re staring at it',
 ].join('\n')
@@ -39,10 +38,11 @@ while (arg = argv.shift())
         args.push(arg)
     else
         switch arg.match(/^--?(.+)/)[1]
-            when 'json' then require('vows/reporters/json')
-            when 'spec' then require('vows/reporters/spec')
-            when 'dot-matrix' then require('vows/reporters/dot-matrix')
-            when 'silent', 's' then require('vows/reporters/base')
+            when 'json' then report.reporter = new report.JSONReporter
+            when 'spec' then report.reporter = new report.SpecReporter
+            when 'dot-matrix' then report.reporter = new report.DotMatrixReporter
+            when 'html-spec' then report.reporter = new report.HTMLSpecReporter
+            when 'silent', 's' then report.reporter = new report.BaseReporter
             when 'version'
                 console.log('vows ' + vows.version)
                 process.exit(0)
@@ -51,7 +51,8 @@ while (arg = argv.shift())
                 console.log(help)
                 process.exit(0)
 
-require('vows/reporters/dot-matrix') if not vows.reporter?
+report.reporter = new report.DotMatrixReporter if not report.reporter?
+stylize.Stylizer = stylize.ConsoleStylizer
 
 files = (path.join(process.cwd(), arg.replace(fileExt, '')) for arg in args)
 
@@ -62,7 +63,7 @@ vows.runner.on 'end', () ->
     results = vows.runner.results
     status = (results.errored and 2) or (results.broken and 1) or 0
 
-    vows.report(['finish', results])
+    report.report(['finish', results])
 
     if process.stdout.write('') # Check if stdout is drained
         process.exit(status)

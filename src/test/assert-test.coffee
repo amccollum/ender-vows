@@ -1,4 +1,5 @@
-vows = require('vows')
+assert = require('assert')
+vows = require('../lib/vows')
 
 vows.add 'vows/assert'
     'The Assertion module':
