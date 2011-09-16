@@ -1,7 +1,9 @@
 !(($) ->
     vows = require('vows')
-    ready = require('domready').ready
+    ready = require('domready')
     
-    ready () -> vows.run()
+    ready () ->
+        vows.run()
+        return
 
 )(ender)
