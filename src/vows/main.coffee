@@ -1,15 +1,17 @@
 events = require('events')
-vows = exports ? (@vows = {})
+vows =
+    if provide? then provide('vows', {})
+    else if exports? then exports
+    else (@vows = {})
 
 
 # external API
-vows.version = '0.1.0'
 vows.add = (description, tests, options) ->
     suite = new vows.Context(description, tests, options)
     vows.runner.add(suite)
     return suite
     
-vows.describe = (description) -> vows.add(description, Array.prototype.slice.call(arguments, 1))
+vows.describe = (description, options) -> vows.add(description, Array.prototype.slice.call(arguments, 1), options)
 vows.run = () -> vows.runner.run()
 
 class vows.VowsError extends Error
