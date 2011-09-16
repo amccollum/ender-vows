@@ -13,14 +13,15 @@ execCmds = (cmds) ->
 
 task 'build', 'Run all build tasks', ->
     execCmds [
-        'cake build-bin',
-        'cake build-lib',
-        'cake build-test',
-        'cake build-example',
+        'cake build:bin',
+        'cake build:lib',
+        'cake build:test',
+        'cake build:example',
+        'cake build:release',
     ]
 
 
-task 'build-bin', 'Build the vows binary', ->
+task 'build:bin', 'Build the vows binary', ->
     execCmds [
         'echo "#!/usr/bin/env node" > ./bin/vows',
         'coffee --compile --bare --print ./src/bin/vows.coffee >> ./bin/vows',
@@ -28,21 +29,19 @@ task 'build-bin', 'Build the vows binary', ->
     ]
     
 
-task 'build-lib', 'Build the vows library', ->
+task 'build:lib', 'Build the vows library', ->
     execCmds [
         'coffee --compile --bare --output ./lib/vows ./src/vows/*.coffee',
-        #'coffee --compile --bare --output ./lib/vows/reporters ./src/vows/reporters/*.coffee',
-        #'coffee --compile --bare --output ./lib/vows/stylizers ./src/vows/stylizers/*.coffee',
     ]
 
 
-task 'build-test', 'Build the test folder', ->
+task 'build:test', 'Build the test folder', ->
     execCmds [
         'coffee --compile --bare --output ./test ./src/test/*.coffee',
     ]
 
 
-task 'build-example', 'Build the example folder', ->
+task 'build:example', 'Build the example folder', ->
     execCmds [
         'coffee --compile --bare --output ./example ./src/example/*.coffee',
         'cp ./src/example/testsuite.html ./example',
@@ -51,22 +50,17 @@ task 'build-example', 'Build the example folder', ->
     ]
 
 
-task 'build-release', 'Create a combined package of all sources', ->
+task 'build:release', 'Create a combined package of all sources', ->
     sources = [
-        './node_modules/node-compat/src/node-compat/require.coffee',
-        './node_modules/node-compat/src/node-compat/assert.coffee',
-        './node_modules/node-compat/src/node-compat/events.coffee',
-        './node_modules/node-compat/src/node-compat/streams.coffee',
-        './node_modules/node-compat/src/node-compat/process.coffee',
-        
-        './src/vows/index.coffee',
-        './src/vows/assert.coffee',
-        
-        './src/vows/report.coffee',
         './src/vows/stylize.coffee',
+        './src/vows/report.coffee',
+        './src/vows/assert.coffee',
+        './src/vows/index.coffee',
+        
+        './src/extras/browser.coffee',
     ].join(' ')
     
     #console.log(sources)
     execCmds [
-        "coffee --compile --join ./lib/vows-#{package.version}.js #{sources}",
+        "coffee --compile --join ./lib/vows.js #{sources}",
     ]

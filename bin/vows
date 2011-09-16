@@ -10,10 +10,10 @@ try {
 } catch (e) {
   fileExt = /\.js$/;
 }
-vows = require('../lib/vows');
+vows = require('../lib/vows/index');
 report = require('../lib/vows/report');
 stylize = require('../lib/vows/stylize');
-help = ['usage: vows [FILE, ...] [options]', '', 'options:', '  -s, --silent      Don\'t report', '  --json            Use JSON reporter', '  --spec            Use Spec reporter', '  --dot-matrix      Use Dot-Matrix reporter', '  --version         Show version', '  -h, --help        You\'re staring at it'].join('\n');
+help = ['usage: vows [FILE, ...] [options]', '', 'options:', '  -s, --silent      Don\'t report', '  --json            Use JSON reporter', '  --spec            Use Spec reporter', '  --dot-matrix      Use Dot-Matrix reporter (default)', '  --version         Show version', '  -h, --help        You\'re staring at it'].join('\n');
 args = [];
 argv = process.argv.slice(2);
 while ((arg = argv.shift())) {

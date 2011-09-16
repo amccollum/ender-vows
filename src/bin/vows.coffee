@@ -10,7 +10,7 @@ try
 catch e
     fileExt     = /\.js$/
 
-vows = require('../lib/vows')
+vows = require('../lib/vows/index')
 report = require('../lib/vows/report')
 stylize = require('../lib/vows/stylize')
 

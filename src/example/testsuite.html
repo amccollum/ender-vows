@@ -6,22 +6,18 @@
     <!-- Stylesheet -->
     <link rel="stylesheet" href="vows.css" />
     
-    <!-- Vows and jQuery -->
-    <script src="../lib/vows-0.1.0.js" type="text/javascript" charset="utf-8"></script>
-    <script src="http://code.jquery.com/jquery-latest.js" type="text/javascript" charset="utf-8"></script>
+    <!-- Vows -->
+    <script src="../node_modules/node-compat/lib/node-compat.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../lib/vows.js" type="text/javascript" charset="utf-8"></script>
     
     <!-- Tests -->
     <script src="../test/assert-test.js" type="text/javascript" charset="utf-8"></script>
     <script src="../test/vows-test.js" type="text/javascript" charset="utf-8"></script>
     <script src="../test/errors-test.js" type="text/javascript" charset="utf-8"></script>
     
-    <!-- Run the Tests -->
-    <script type="text/javascript">
-        $(document).ready(function () { vows.run() });
-    </script>
 </head>
-<body>
+<body onload="vows.run();">
     <!-- Test Results -->
-	<pre class="results"></pre>
+	<pre id="vows-results"></pre>
 </body>
 </html>

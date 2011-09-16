@@ -11,7 +11,7 @@ body {
     padding: 20px;
 }
 
-.results div {
+#vows-results div {
     display: inline;
 }
 

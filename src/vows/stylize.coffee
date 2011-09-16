@@ -1,4 +1,5 @@
-stylize = exports ? (@stylize = {})
+stylize = if provide? then provide('./stylize', {}) else exports
+
 
 stylize.stylize = (ob) ->
     s = new stylize.Stylizer(ob)

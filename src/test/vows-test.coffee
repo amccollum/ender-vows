@@ -1,7 +1,7 @@
 assert = require('assert')
 events = require('events')
 fs = require('fs')
-vows = require('../lib/vows')
+vows = require('vows')
 
 promiser = () ->
     args = Array.prototype.slice.call(arguments)

@@ -1,11 +1,12 @@
 events = require('events')
 report = require('./report')
-vows = exports ? (@vows = {})
+vows = if provide? then provide('vows', {}) else exports
+
 
 # external API
 vows.version = '0.1.0'
-vows.add = (description, tests) ->
-    suite = new vows.Context(description, tests)
+vows.add = (description, tests, options) ->
+    suite = new vows.Context(description, tests, options)
     vows.runner.add(suite)
     return suite
     
@@ -19,7 +20,7 @@ class vows.VowsError extends Error
 
 
 class vows.Context extends events.EventEmitter
-    constructor: (description, content, parent, options) ->
+    constructor: (description, content, options, parent) ->
         @description = description
         @content = content
         @parent = parent
@@ -27,44 +28,57 @@ class vows.Context extends events.EventEmitter
         # silence node EventEmitter warnings
         @_events = { maxListeners: 100 }
 
-        @options = options ? parent?.options ? {}
-        @matched = not @options.matcher? or @parent?.matched or @options.matcher.test(@description)
-        if not @matched
-             @emit(@status = 'skip')
-             return @end('skipped')
+        @options = options ? {}
+        @matched = (not @options.matcher?) or @parent?.matched or @options.matcher.test(@description)
 
-        switch typeof @content
-            when 'string' then @type = 'comment'
-            when 'function' then @type = 'test'
-            when 'object' then @type = (if @content.length? then 'batch' else 'group')
-            else throw new vows.VowsError(this, 'Unknown content type')
-
-        @status = null
-        @exception = null
-        @topic = null
-        @topics = null
-
-        @result = null
-        
         @results = { startDate: null, endDate: null }
         for key in ['total', 'running', 'honored', 'pending', 'broken', 'errored']
             @results[key] = 0
 
-    report: (ob) -> report.report(ob) if not @options.silent
+        switch typeof @content
+            when 'string'
+                @type = 'comment'
+                @results.total = 1
+                
+            when 'function'
+                @type = 'test'
+                @results.total = 1
+                
+            when 'object'
+                if @content.length?
+                    @type = 'batch'
+                    for value, i in @content
+                        context = new vows.Context(null, value, @options, this)
+                        @content[i] = context
+                        @results.total += context.results.total
+                else
+                    @type = 'group'
+                    for key, value of @content
+                        if key in ['topic', 'async', 'setup', 'teardown']
+                            if key == 'topic'
+                                @hasTopic = true
+                                
+                            @[key] = value
+                            delete @content[key]
+                        else
+                            context = new vows.Context(key, value, @options, this)
+                            @content[key] = context
+                            @results.total += context.results.total
+                    
+            else throw new vows.VowsError(this, 'Unknown content type')
+            
 
-    _expectsError: (fn) -> /^function\s*\w*\s*\(\s*(e|err|error)\b/.test(fn)
+    report: () -> report.report.apply(this, arguments) if not @options.silent
 
+    _errorPattern: /^function\s*\w*\s*\(\s*(e|err|error)\b/
+    
     run: (topics) ->
         @topics = if topics? then Array.prototype.slice.call(topics) else []
-        @emit(@status = 'begin')
         @results.startDate = new Date
 
-        if @parent == vows.runner
-            @report(['subject', @description]) if @description
-
-        # create the environment, inherited from the parent environment
-        context = this
-        do (context) =>
+        do =>
+            # create the environment, inherited from the parent environment
+            context = @
             @env = new class Env
                 constructor: () ->
                     @context = context
@@ -77,13 +91,23 @@ class vows.Context extends events.EventEmitter
                 @:: = (if context.parent then context.parent.env else {})
                 @::constructor = @
 
+
+        if @matched
+            @emit(@status = 'begin')
+        else
+            @emit(@status = 'skip')
+            return @end('skipped')
+
+        if @parent == vows.runner
+            @report('subject', @description) if @description
+
         switch @type
             when 'comment' then @end('pending')
             when 'test'
                 try
                     @content.apply(@env, @topics)
                     @end('honored')
-        
+                        
                 catch e
                     @exception = e
                     if e.name?.match(/AssertionError/)
@@ -98,10 +122,6 @@ class vows.Context extends events.EventEmitter
                 batch = @content.slice()
                 while batch.length
                     cur = batch.pop()
-                    if cur instanceof vows.Context
-                        cur.parent = this
-                    else
-                        cur = new vows.Context(null, cur, this)
                     
                     if next?
                         cur.on 'end', do (next) -> () -> next.run(topics)
@@ -116,41 +136,46 @@ class vows.Context extends events.EventEmitter
             when 'group'
                 return @end('end') if not (key for key of @content).length
 
+                # setup
+                if @setup?
+                    try
+                        @setup.apply(@env, @topics)
+                    catch e
+                        @exeption = e
+                        return @end('errored')
+
                 # capture topic
                 @on 'topic', () =>
-                    if @content.topic?
+                    if @hasTopic
                         args = Array.prototype.slice.call(arguments)
                         @topics = args.concat(@topics)
                 
                 # setup the next level
-                hasTests = false
-                for key, value of @content
-                    continue if key in ['topic', 'async', 'teardown']
-                    child = new vows.Context(key, value, this)
-                    continue if not child.matched
-                    
+                @hasTests = false
+                for key, child of @content
                     do (child) =>
                         @results.running++
                         
                         # report the context of the tests
-                        if not hasTests and child.type == 'test'
-                            hasTests = true
+                        if not @hasTests and child.type == 'test'
+                            @hasTests = true
                             @on 'run', () =>
                                 context = this
                                 parts = [@description]
                                 while (context = context.parent) and context.parent != vows.runner
                                     parts.unshift(context.description) if context.description
                                 
-                                @report(['context', parts.join(' ')])
+                                @report 'context', 
+                                    description: parts.join(' ')
                     
                         @on 'topic', () =>
-                            if child.type == 'test' and @_expectsError(child.content)
+                            if child.type == 'test' and @_errorPattern.test(child.content)
                                 child.run([null].concat(@topics))
                             else
                                 child.run(@topics)
                             
                         @on 'error', (e) =>
-                            if child.type == 'test' and @_expectsError(child.content)
+                            if child.type == 'test' and @_errorPattern.test(child.content)
                                 child.run(arguments)
                             else
                                 # unexpected error
@@ -162,11 +187,9 @@ class vows.Context extends events.EventEmitter
                             @end('done') if not --@results.running
 
                 # teardown
-                @on 'topic', () =>
-                    @content.teardown.apply(this, @topics) if @content.teardown?
+                @on 'topic', () => @teardown.apply(this, @topics) if @teardown?
 
                 # get the topic and run the test
-                @topic = @content.topic
                 if not @topic?
                     if @topics.length
                         @topic = @topics[0]
@@ -174,8 +197,9 @@ class vows.Context extends events.EventEmitter
                 else if typeof @topic == 'function'
                     try
                         @topic = @topic.apply(@env, @topics)
-                        if @content.async or not @topic?
-                            # ignore return value
+                        if not @topic?
+                            @async = true
+                        else if @async
                             @topic = null
                             
                     catch e
@@ -191,12 +215,10 @@ class vows.Context extends events.EventEmitter
                         @async = false
                         @success(@topic)
                 
-                else if @content.topic?
-                    @async = true
-                
-                else
+                else if not @async
+                    # Groups with no topic
                     @success()
-
+                
         return this
 
     end: (result) ->
@@ -207,20 +229,29 @@ class vows.Context extends events.EventEmitter
         @results.endDate = new Date
         @results.duration = (@results.endDate - @results.startDate) / 1000
 
+        if @type == 'group'
+            if @result == 'errored' and not @hasTests
+                context = this
+                parts = [@description]
+                while (context = context.parent) and context.parent != vows.runner
+                    parts.unshift(context.description) if context.description
+                
+                @report 'context',
+                    description: parts.join(' ')
+                    exception: @exception
+                
         if @type in ['test', 'comment']
-            @results.total++
-            @results[result]++
-            @report(['vow', {
-                title: @description,
-                content: @content,
-                context: @parent.description,
-                result: @result,
-                duration: @results.duration,
-                exception: @exception,
-            }])
+            @results[@result]++
+            @report 'vow',
+                description: @description
+                content: @content
+                context: @parent.description
+                result: @result
+                duration: @results.duration
+                exception: @exception
 
         if @parent?
-            for key in ['total', 'running', 'honored', 'pending', 'broken', 'errored']
+            for key in ['running', 'honored', 'pending', 'broken', 'errored']
                 @parent.results[key] += @results[key]
         
         @emit(@status = 'end', @result)
@@ -259,20 +290,15 @@ class vows.Context extends events.EventEmitter
         # prevent CoffeeScript from returning a value
         return
 
-    add: (tests) ->
+    add: (context) ->
         switch @type
-            when 'batch'
-                if typeof tests == 'object' and tests.length?
-                    @content = @content.concat(tests)
-                else
-                    @content.push(tests)
-                    
-            when 'group'
-                for key, value of tests
-                    @content[key] = value
-            
+            when 'batch' then @content.push(context)
+            when 'group' then @content[context.description] = context
             else throw new vows.VowsError(this, 'Can\'t add to tests or comments')
 
+        context.parent = this
+        @results.total += context.results.total
+        
         return this
 
     # Compatibility with regular vows
@@ -284,12 +310,22 @@ class vows.Context extends events.EventEmitter
 
 
 class vows.Runner extends vows.Context
+    _totalTests: () ->
+        switch @type
+            when 'group'
+                groupTotal = 0
+
+                for key, child of @content
+                    groupTotal += @content[key].type == 'test'
+                    
+                return 
+
     run: (callback) ->
         @on 'end', () =>
             @results.dropped = @results.total - (@results.honored + @results.pending +
                                                  @results.errored + @results.broken)
                                                  
-            @report(['finish', @results])
+            @report('finish', @results)
             callback(@results) if callback?
             
         return super()

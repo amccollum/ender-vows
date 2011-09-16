@@ -1,5 +1,6 @@
 stylize = require('./stylize')
-report = exports ? (@report = {})
+report = if provide? then provide('./report', {}) else exports
+
 
 report.report = () -> report.reporter.report.apply(report.reporter, arguments) if report.reporter
 
@@ -14,43 +15,49 @@ class report.BaseReporter
 
 class report.JSONReporter extends report.BaseReporter
     name: 'json'
-    report: (obj) -> @print(JSON.stringify(obj) + '\n')
+    report: () -> @print(JSON.stringify(Array.prototype.slice.call(arguments)) + '\n')
 
 
 class report.SpecReporter extends report.BaseReporter
     name: 'spec'
-    report: (data) ->
-        event = data[1]
-        switch data[0]
+    report: (name, event) ->
+        switch name
             when 'subject' then @print("\n\n♢ #{@stylize(event).bold()}\n")
-            when 'context' then @print("\n  #{event}\n")
+            when 'context' then @print(@_contextEvent(event))
             when 'vow' then @print(@_vowEvent(event))
             when 'end' then @print('\n')
             when 'finish' then @print('\n' + @_resultEvent(event))
             when 'error' then @print(@_errorEvent(event))
 
+    _contextEvent: (event) ->
+        if event.exception then @stylize("\n  #{event.description}\n").error()
+        else "\n  #{event.description}\n"
+        
+    
     _vowEvent: (event) ->
         return switch event.result
-            when 'honored' then @stylize("    ✓ #{event.title}\n").success()
-            when 'broken'  then @stylize("    ✗ #{event.title}\n      » #{event.exception}\n").warning()
-            when 'errored' then @stylize("    ⊘ #{event.title}\n      » #{event.exception}\n").error()
-            when 'pending' then @stylize("    ∴ #{event.title}\n      » #{event.content}\n").pending()
+            when 'honored' then @stylize("    ✓ #{event.description}\n").success()
+            when 'broken'  then @stylize("    ✗ #{event.description}\n      » #{event.exception}\n").warning()
+            when 'errored' then @stylize("    ⊘ #{event.description}\n      » #{event.exception}\n").error()
+            when 'pending' then @stylize("    ∴ #{event.description}\n      » #{event.content}\n").pending()
 
     _resultEvent: (event) ->
         if event.total == 0
             return @stylize('Could not find any tests to run.\n').bold().error()
 
-        status = (event.errored and 'errored') or (event.broken and 'broken') or
-                 (event.honored and 'honored') or (event.pending and 'pending')
+        status = (event.errored and 'errored') or (event.dropped and 'dropped') or
+                 (event.broken and 'broken') or (event.honored and 'honored') or
+                 (event.pending and 'pending')
 
         header = switch status
-            when 'honored' then @stylize("✓ #{@stylize('OK').bold()}").success()
-            when 'broken'  then @stylize("✗ #{@stylize('Broken').bold()}").warning()
             when 'errored' then @stylize("⊘ #{@stylize('Errored').bold()}").error()
+            when 'dropped' then @stylize("… #{@stylize('Incomplete').bold()}").error()
+            when 'broken'  then @stylize("✗ #{@stylize('Broken').bold()}").warning()
+            when 'honored' then @stylize("✓ #{@stylize('Honored').bold()}").success()
             when 'pending' then @stylize("∴ #{@stylize('Pending').bold()}").pending()
 
         message = []
-        for key in ['honored', 'pending', 'broken', 'errored']
+        for key in ['honored', 'pending', 'broken', 'errored', 'dropped']
             message.push("#{@stylize(event[key]).bold()} #{key}") if event[key]
 
         time = @stylize(event.duration.toFixed(3)).message()
@@ -58,7 +65,7 @@ class report.SpecReporter extends report.BaseReporter
 
     _errorEvent: (event) ->
         return ("✗ #{@stylize('Errored').error()} " + 
-                "» #{@stylize(vow.title).bold()}" +
+                "» #{@stylize(vow.description).bold()}" +
                 ": #{@stylize(vow.exception).error()}\n")
                 
                 
@@ -68,9 +75,8 @@ class report.DotMatrixReporter extends report.SpecReporter
         @messages = []
         @lastContext = null
 
-    report: (data, s) ->
-        event = data[1]
-        switch data[0]
+    report: (name, event) ->
+        switch name
             when 'subject' then null
             when 'context' then null
             when 'vow'
@@ -99,4 +105,4 @@ class report.DotMatrixReporter extends report.SpecReporter
 
 class report.HTMLSpecReporter extends report.SpecReporter
     name: 'html-spec'
-    print: (ob) -> $('pre.results').html($('pre.results').html() + ob)
+    print: (ob) -> document.getElementById('vows-results').innerHTML += ob

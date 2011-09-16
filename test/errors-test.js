@@ -2,11 +2,11 @@ var assert, events, vowPromiser, vows;
 var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 events = require('events');
 assert = require('assert');
-vows = require('../lib/vows');
-vowPromiser = function(description, content, parent) {
+vows = require('vows');
+vowPromiser = function(description, content) {
   var context, promise;
   promise = new events.EventEmitter;
-  context = new vows.Context(description, content, parent, {
+  context = new vows.Context(description, content, {
     silent: true
   });
   context.on('end', function() {
@@ -123,8 +123,8 @@ vows.add('Vows Errors', {
       return assert.equal(context.result, 'timeout');
     },
     'should still be running': function(context) {
-      assert.equal(context.results['running'], 1);
-      return assert.equal(context.results['total'], 0);
+      assert.equal(context.results['total'], 1);
+      return assert.equal(context.results['running'], 1);
     }
   }
 });
