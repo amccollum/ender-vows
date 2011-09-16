@@ -1,6 +1,6 @@
 events = require('events')
 assert = require('assert')
-vows = require('vows')
+vows = require('..') ? require('vows')
 
 vowPromiser = (description, content) ->
     promise = new events.EventEmitter

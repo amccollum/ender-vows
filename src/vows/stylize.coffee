@@ -1,23 +1,22 @@
-stylize = if provide? then provide('./stylize', {}) else exports
+vows.stylizers = stylizers = {}
 
-
-stylize.stylize = (ob) ->
-    s = new stylize.Stylizer(ob)
+vows.stylize = (ob) ->
+    s = new vows.stylizer(ob)
     for arg in Array.prototype.slice.call(arguments)[1..]
         s.stylize(arg)
         
     return s
 
 
-stylize.format = (str) -> 
-    str = str.replace /`([^`]+)`/g, (_, part) => stylize.stylize(part).italic()
-    str = str.replace /\*([^*]+)\*/g, (_, part) => stylize.stylize(part).bold()
-    str = str.replace /_([^_]+)_/g, (_, str) => stylize.stylize(part).underline()
+vows.format = (str) -> 
+    str = str.replace /`([^`]+)`/g, (_, part) => vows.stylize(part).italic()
+    str = str.replace /\*([^*]+)\*/g, (_, part) => vows.stylize(part).bold()
+    str = str.replace /_([^_]+)_/g, (_, str) => vows.stylize(part).underline()
     return str
 
 
 _stack = []
-stylize.stringify = (obj) ->
+vows.stringify = (obj) ->
     len = (obj) -> obj.length if 'length' of obj else Object.keys(obj).length 
     
     typeOf = (value) ->
@@ -37,23 +36,23 @@ stylize.stringify = (obj) ->
     
     if obj in _stack
         before = _stack.length - _stack.indexOf(obj)
-        return stylize.stylize(('.' for i in [0..before]).join(''), 'special')
+        return vows.stylize(('.' for i in [0..before]).join(''), 'special')
     
     _stack.push(obj)
     result = switch typeOf(obj)
-        when 'regexp'    then stylize.stylize('/' + obj.source + '/', 'regexp')
-        when 'number'    then stylize.stylize(obj.toString(), 'number')
-        when 'boolean'   then stylize.stylize(obj.toString(), 'boolean')
-        when 'null'      then stylize.stylize('null', 'special')
-        when 'undefined' then stylize.stylize('undefined', 'special')
-        when 'function'  then stylize.stylize('[Function]', 'other')
-        when 'date'      then stylize.stylize(obj.toUTCString(), 'default')
+        when 'regexp'    then vows.stylize('/' + obj.source + '/', 'regexp')
+        when 'number'    then vows.stylize(obj.toString(), 'number')
+        when 'boolean'   then vows.stylize(obj.toString(), 'boolean')
+        when 'null'      then vows.stylize('null', 'special')
+        when 'undefined' then vows.stylize('undefined', 'special')
+        when 'function'  then vows.stylize('[Function]', 'other')
+        when 'date'      then vows.stylize(obj.toUTCString(), 'default')
         when 'string'
             obj = if /'/.test(obj) then "\"#{obj}\"" else "'#{obj}'"
             obj = obj.replace(/\\/g, '\\\\')
                      .replace(/\n/g, '\\n')
                      .replace(/[\u0001-\u001F]/g, (match) -> '\\0' + match[0].charCodeAt(0).toString(8))
-            stylize.stylize(obj, 'string')
+            vows.stylize(obj, 'string')
             
         when 'array'
             pretty = len(obj) > 4 or len(o for o in obj if len(o) > 0)
@@ -72,19 +71,19 @@ stylize.stringify = (obj) ->
             end = if pretty then ws.slice(0, -4) else ' '
             sep = ",#{start}"
             
-            contents = (stylize.stylize(k).key() + ': ' + vows.stringify(v) for k, v of obj).join(sep)
+            contents = (vows.stylize(k).key() + ': ' + vows.stringify(v) for k, v of obj).join(sep)
             if contents then "{#{start}#{contents}#{end}}" else '{}'
 
     _stack.pop()
     return result
 
 
-class stylize.BaseStylizer
+class stylizers.BaseStylizer
     constructor: (ob) -> @str = '' + ob
     toString: () -> @str
 
 
-class stylize.ConsoleStylizer extends stylize.BaseStylizer
+class stylizers.ConsoleStylizer extends stylizers.BaseStylizer
     styles: {
         plain     : null,
         bold      : [1,  22],
@@ -137,7 +136,7 @@ class stylize.ConsoleStylizer extends stylize.BaseStylizer
         return this
 
 
-class stylize.HTMLStylizer extends stylize.BaseStylizer
+class stylizers.HTMLStylizer extends stylizers.BaseStylizer
     styles: {
         bold      : ['b', null],
         italic    : ['i', null],

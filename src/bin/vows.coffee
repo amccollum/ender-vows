@@ -10,9 +10,7 @@ try
 catch e
     fileExt     = /\.js$/
 
-vows = require('../lib/vows/index')
-report = require('../lib/vows/report')
-stylize = require('../lib/vows/stylize')
+vows = require('..')
 
 help = [
     'usage: vows [FILE, ...] [options]',
@@ -38,11 +36,11 @@ while (arg = argv.shift())
         args.push(arg)
     else
         switch arg.match(/^--?(.+)/)[1]
-            when 'json' then report.reporter = new report.JSONReporter
-            when 'spec' then report.reporter = new report.SpecReporter
-            when 'dot-matrix' then report.reporter = new report.DotMatrixReporter
-            when 'html-spec' then report.reporter = new report.HTMLSpecReporter
-            when 'silent', 's' then report.reporter = new report.BaseReporter
+            when 'json' then vows.reporter = new vows.reporters.JSONReporter
+            when 'spec' then vows.reporter = new vows.reporters.SpecReporter
+            when 'dot-matrix' then vows.reporter = new vows.reporters.DotMatrixReporter
+            when 'html-spec' then vows.reporter = new vows.reporters.HTMLSpecReporter
+            when 'silent', 's' then vows.reporter = new vows.reporters.BaseReporter
             when 'version'
                 console.log('vows ' + vows.version)
                 process.exit(0)
@@ -51,8 +49,8 @@ while (arg = argv.shift())
                 console.log(help)
                 process.exit(0)
 
-report.reporter = new report.DotMatrixReporter if not report.reporter?
-stylize.Stylizer = stylize.ConsoleStylizer
+vows.reporter = new vows.reporters.DotMatrixReporter if not vows.reporter?
+vows.stylizer = vows.stylizers.ConsoleStylizer
 
 files = (path.join(process.cwd(), arg.replace(fileExt, '')) for arg in args)
 
@@ -63,7 +61,7 @@ vows.runner.on 'end', () ->
     results = vows.runner.results
     status = (results.errored and 2) or (results.broken and 1) or 0
 
-    report.report(['finish', results])
+    vows.report('finish', results)
 
     if process.stdout.write('') # Check if stdout is drained
         process.exit(status)

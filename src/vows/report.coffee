@@ -1,24 +1,22 @@
-stylize = require('./stylize')
-report = if provide? then provide('./report', {}) else exports
+vows.reporters = reporters = {}
 
+vows.report = () -> vows.reporter.report.apply(vows.reporter, arguments) if vows.reporter
 
-report.report = () -> report.reporter.report.apply(report.reporter, arguments) if report.reporter
-
-class report.BaseReporter
+class reporters.BaseReporter
     name: 'silent'
     constructor: () -> @reset()
     reset: () -> null
     report: (data) -> null
     print: (ob) -> process.stdout.write('' + ob)
-    stylize: (ob) -> stylize.stylize(ob)
+    stylize: (ob) -> vows.stylize(ob)
 
 
-class report.JSONReporter extends report.BaseReporter
+class reporters.JSONReporter extends reporters.BaseReporter
     name: 'json'
     report: () -> @print(JSON.stringify(Array.prototype.slice.call(arguments)) + '\n')
 
 
-class report.SpecReporter extends report.BaseReporter
+class reporters.SpecReporter extends reporters.BaseReporter
     name: 'spec'
     report: (name, event) ->
         switch name
@@ -69,7 +67,7 @@ class report.SpecReporter extends report.BaseReporter
                 ": #{@stylize(vow.exception).error()}\n")
                 
                 
-class report.DotMatrixReporter extends report.SpecReporter
+class reporters.DotMatrixReporter extends reporters.SpecReporter
     name: 'dot-matrix'
     reset: () ->
         @messages = []
@@ -103,6 +101,6 @@ class report.DotMatrixReporter extends report.SpecReporter
             when 'error' then @print(@_errorEvent(event))
 
 
-class report.HTMLSpecReporter extends report.SpecReporter
+class reporters.HTMLSpecReporter extends reporters.SpecReporter
     name: 'html-spec'
     print: (ob) -> document.getElementById('vows-results').innerHTML += ob

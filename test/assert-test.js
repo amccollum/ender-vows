@@ -1,6 +1,6 @@
-var assert, vows;
+var assert, vows, _ref;
 assert = require('assert');
-vows = require('vows');
+vows = (_ref = require('..')) != null ? _ref : require('vows');
 vows.add('vows/assert', {
   'The Assertion module': {
     topic: require('assert'),

@@ -1,1 +1,1 @@
-module.exports = require("./lib/vows/index");
+module.exports = require("./lib/vows.js");

@@ -1,6 +1,5 @@
 events = require('events')
-report = require('./report')
-vows = if provide? then provide('vows', {}) else exports
+vows = exports ? (@vows = {})
 
 
 # external API
@@ -68,7 +67,7 @@ class vows.Context extends events.EventEmitter
             else throw new vows.VowsError(this, 'Unknown content type')
             
 
-    report: () -> report.report.apply(this, arguments) if not @options.silent
+    report: () -> vows.report.apply(this, arguments) if not @options.silent
 
     _errorPattern: /^function\s*\w*\s*\(\s*(e|err|error)\b/
     
@@ -331,11 +330,6 @@ class vows.Runner extends vows.Context
         return super()
 
 vows.runner = new vows.Runner(null, [])
-
-# include the auxiliary modules when we're on the server
-if exports?
-    #require('./extras')
-    require('./assert')
 
 
 #process.on 'exit', () -> debugger

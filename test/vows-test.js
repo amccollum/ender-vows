@@ -1,9 +1,9 @@
-var assert, events, fs, promiseBreaker, promiser, vows;
+var assert, events, fs, promiseBreaker, promiser, vows, _ref;
 var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 assert = require('assert');
 events = require('events');
 fs = require('fs');
-vows = require('vows');
+vows = (_ref = require('..')) != null ? _ref : require('vows');
 promiser = function() {
   var args, promise;
   args = Array.prototype.slice.call(arguments);
