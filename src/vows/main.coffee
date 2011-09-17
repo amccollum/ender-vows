@@ -23,7 +23,6 @@ class vows.VowsError extends Error
 class vows.Context extends events.EventEmitter
     constructor: (description, content, options, parent) ->
         @description = description
-        @content = content
         @parent = parent
 
         # silence node EventEmitter warnings
@@ -36,35 +35,38 @@ class vows.Context extends events.EventEmitter
         for key in ['total', 'running', 'honored', 'pending', 'broken', 'errored']
             @results[key] = 0
 
-        switch typeof @content
+        switch typeof content
             when 'string'
                 @type = 'comment'
                 @results.total = 1
+                @content = content
                 
             when 'function'
                 @type = 'test'
                 @results.total = 1
+                @content = content
                 
             when 'object'
-                if @content.length?
+                if content.length?
                     @type = 'batch'
-                    for value, i in @content
-                        context = new vows.Context(null, value, @options, this)
-                        @content[i] = context
-                        @results.total += context.results.total
+                    @content = []
+                    
+                    for value in content
+                        @add(new vows.Context(null, value, @options, this))
+
                 else
                     @type = 'group'
-                    for key, value of @content
+                    @content = {}
+                    
+                    for key, value of content
                         if key in ['topic', 'async', 'setup', 'teardown']
                             if key == 'topic'
                                 @hasTopic = true
                                 
                             @[key] = value
-                            delete @content[key]
+                            
                         else
-                            context = new vows.Context(key, value, @options, this)
-                            @content[key] = context
-                            @results.total += context.results.total
+                            @add(new vows.Context(key, value, @options, this))
                     
             else throw new vows.VowsError(this, 'Unknown content type')
             

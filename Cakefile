@@ -53,7 +53,6 @@ task 'build:test', 'Build the test folder', ->
 task 'build:example', 'Build the example folder', ->
     execCmds [
         'coffee --compile --bare --output example src/example/*.coffee',
-        'cp src/example/testsuite.html example',
-        'cp src/example/example.html example',
+        'cp src/example/*.html example',
         'cp src/example/vows.css example',
     ]
