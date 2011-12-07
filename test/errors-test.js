@@ -1,8 +1,11 @@
 var assert, events, vowPromiser, vows, _ref;
-var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
 events = require('events');
+
 assert = require('assert');
+
 vows = (_ref = require('..')) != null ? _ref : require('vows');
+
 vowPromiser = function(description, content) {
   var context, promise;
   promise = new events.EventEmitter;
@@ -13,15 +16,14 @@ vowPromiser = function(description, content) {
     return promise.emit('success', context);
   });
   setTimeout((function() {
-    if (context.status === 'begin') {
-      return context.end('timeout');
-    }
+    if (context.status === 'begin') return context.end('timeout');
   }), 100);
   process.nextTick(function() {
     return context.run();
   });
   return promise;
 };
+
 vows.add('Vows Errors', {
   'A pending test': {
     topic: function() {
@@ -89,9 +91,10 @@ vows.add('Vows Errors', {
     topic: function() {
       return vowPromiser('A test', {
         topic: function() {
-          return process.nextTick(__bind(function() {
-            return this.error('This is an error!');
-          }, this));
+          var _this = this;
+          return process.nextTick(function() {
+            return _this.error('This is an error!');
+          });
         },
         'not expecting an error': function(topic) {
           return assert.ok(true);

@@ -1,23 +1,31 @@
 #!/usr/bin/env node
 var arg, args, argv, coffee, events, f, fileExt, files, fs, help, path, util, vows, _i, _len;
+
 path = require('path');
+
 fs = require('fs');
+
 util = require('util');
+
 events = require('events');
+
 try {
   coffee = require('coffee-script');
   fileExt = /\.(js|coffee)$/;
 } catch (e) {
   fileExt = /\.js$/;
 }
+
 vows = require('..');
+
 help = ['usage: vows [FILE, ...] [options]', '', 'options:', '  -s, --silent      Don\'t report', '  --json            Use JSON reporter', '  --spec            Use Spec reporter', '  --dot-matrix      Use Dot-Matrix reporter (default)', '  --version         Show version', '  -h, --help        You\'re staring at it'].join('\n');
+
 args = [];
+
 argv = process.argv.slice(2);
+
 while ((arg = argv.shift())) {
-  if (arg === __filename) {
-    continue;
-  }
+  if (arg === __filename) continue;
   if (arg[0] !== '-') {
     args.push(arg);
   } else {
@@ -49,10 +57,11 @@ while ((arg = argv.shift())) {
     }
   }
 }
-if (!(vows.reporter != null)) {
-  vows.reporter = new vows.reporters.DotMatrixReporter;
-}
+
+if (!(vows.reporter != null)) vows.reporter = new vows.reporters.DotMatrixReporter;
+
 vows.stylizer = vows.stylizers.ConsoleStylizer;
+
 files = (function() {
   var _i, _len, _results;
   _results = [];
@@ -62,10 +71,12 @@ files = (function() {
   }
   return _results;
 })();
+
 for (_i = 0, _len = files.length; _i < _len; _i++) {
   f = files[_i];
   require(f);
 }
+
 vows.runner.on('end', function() {
   var results, status;
   results = vows.runner.results;
@@ -79,4 +90,5 @@ vows.runner.on('end', function() {
     });
   }
 });
+
 vows.runner.run();

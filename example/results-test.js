@@ -1,6 +1,9 @@
 var assert, vows;
+
 assert = require('assert');
+
 vows = require('vows');
+
 vows.add('Vows Result Types', {
   'When running tests on a topic,': {
     topic: function() {

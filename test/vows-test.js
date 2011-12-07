@@ -1,9 +1,13 @@
 var assert, events, fs, promiseBreaker, promiser, vows, _ref;
-var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
 assert = require('assert');
+
 events = require('events');
+
 fs = require('fs');
+
 vows = (_ref = require('..')) != null ? _ref : require('vows');
+
 promiser = function() {
   var args, promise;
   args = Array.prototype.slice.call(arguments);
@@ -13,6 +17,7 @@ promiser = function() {
   });
   return promise;
 };
+
 promiseBreaker = function(val) {
   var args, promise;
   args = Array.prototype.slice.call(arguments);
@@ -22,6 +27,7 @@ promiseBreaker = function(val) {
   });
   return promise;
 };
+
 vows.add('Vows', [
   {
     'A context': {
@@ -191,9 +197,10 @@ vows.add('Vows', [
     'A topic with callback-style async': {
       'when successful': {
         topic: function() {
-          process.nextTick(__bind(function() {
-            return this.callback(null, 'OK');
-          }, this));
+          var _this = this;
+          process.nextTick(function() {
+            return _this.callback(null, 'OK');
+          });
         },
         'should work like an event-emitter': function(res) {
           return assert.equal(res, 'OK');
@@ -266,6 +273,7 @@ vows.add('Vows', [
     }
   }
 ]);
+
 vows.add('Vows with teardowns', {
   'A context': {
     topic: function() {

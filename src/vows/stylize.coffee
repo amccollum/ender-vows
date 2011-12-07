@@ -45,7 +45,7 @@ vows.stringify = (obj) ->
         when 'boolean'   then vows.stylize(obj.toString(), 'boolean')
         when 'null'      then vows.stylize('null', 'special')
         when 'undefined' then vows.stylize('undefined', 'special')
-        when 'function'  then vows.stylize('[Function]', 'other')
+        when 'function'  then vows.stylize('[Function]', 'function')
         when 'date'      then vows.stylize(obj.toUTCString(), 'default')
         when 'string'
             obj = if /'/.test(obj) then "\"#{obj}\"" else "'#{obj}'"

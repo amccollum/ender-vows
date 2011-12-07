@@ -1,4 +1,4 @@
-!(($) ->
+(($) ->
     vows = require('vows')
     ready = require('domready')
     
