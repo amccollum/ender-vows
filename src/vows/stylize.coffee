@@ -58,7 +58,7 @@ vows.stringify = (obj) ->
             vows.stylize(obj, 'string')
             
         when 'array'
-            pretty = len(obj) > 4 or len(o for o in obj if len(o) > 0)
+            pretty = len(obj) > 4 or (o for o in obj when len(o) > 0).length
             
             start = if pretty then '\n' + (' ' for i in [0..4*_stack.length]).join('') else ' '
             end = if pretty then ws.slice(0, -4) else ' '
@@ -68,7 +68,7 @@ vows.stringify = (obj) ->
             if contents then "[#{start}#{contents}#{end}]" else '[]'
 
         when 'object'
-            pretty = len(obj) > 2 or len(o for o in obj and len(o) > 0)
+            pretty = len(obj) > 2 or (o for o in obj when len(o) > 0).length
 
             start = if pretty then '\n' + (' ' for i in [0..4*_stack.length]).join('') else ' '
             end = if pretty then ws.slice(0, -4) else ' '
