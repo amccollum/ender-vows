@@ -17,7 +17,10 @@ vows.format = (str) ->
 
 _stack = []
 vows.stringify = (obj) ->
-    len = (obj) -> if 'length' of obj then obj.length else Object.keys(obj).length 
+    len = (obj) ->
+        if typeof obj != 'object' then 0
+        else if 'length' of obj then obj.length
+        else Object.keys(obj).length 
     
     typeOf = (value) ->
         s = typeof value
