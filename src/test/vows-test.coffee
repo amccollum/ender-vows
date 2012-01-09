@@ -1,7 +1,7 @@
 assert = require('assert')
 events = require('events')
 fs = require('fs')
-vows = require('..') ? require('vows')
+vows = require('vows')
 
 promiser = () ->
     args = Array.prototype.slice.call(arguments)
@@ -96,7 +96,7 @@ vows.add 'Vows', [
                             topic: (prev, prev2) -> @context.topics.slice()
                     
                             'should pass the topics down': (topics) ->
-                                assert.length(topics, 2)
+                                assert.equal(topics.length, 2)
                                 assert.equal(topics[0], 101)
                                 assert.equal(topics[1], 45)
 

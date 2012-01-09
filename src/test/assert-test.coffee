@@ -1,9 +1,9 @@
 assert = require('assert')
-vows = require('..') ? require('vows')
+vows = require('vows')
 
 vows.add 'vows/assert'
     'The Assertion module':
-        topic: require('assert')
+        topic: -> require('assert')
 
         '`equal`': (assert) ->
             assert.equal('hello world', 'hello world')
@@ -11,10 +11,6 @@ vows.add 'vows/assert'
 
         '`match`': (assert) ->
             assert.match('hello world', /^[a-z]+ [a-z]+$/)
-    
-        '`length`': (assert) ->
-            assert.length('hello world', 11)
-            assert.length([1, 2, 3], 3)
     
         '`include`': (assert) ->
             assert.include('hello world', 'world')

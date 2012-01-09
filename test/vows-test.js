@@ -1,4 +1,4 @@
-var assert, events, fs, promiseBreaker, promiser, vows, _ref;
+var assert, events, fs, promiseBreaker, promiser, vows;
 
 assert = require('assert');
 
@@ -6,7 +6,7 @@ events = require('events');
 
 fs = require('fs');
 
-vows = (_ref = require('..')) != null ? _ref : require('vows');
+vows = require('vows');
 
 promiser = function() {
   var args, promise;
@@ -127,7 +127,7 @@ vows.add('Vows', [
                 return this.context.topics.slice();
               },
               'should pass the topics down': function(topics) {
-                assert.length(topics, 2);
+                assert.equal(topics.length, 2);
                 assert.equal(topics[0], 101);
                 return assert.equal(topics[1], 45);
               }

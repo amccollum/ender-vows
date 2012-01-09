@@ -1,22 +1,20 @@
-var assert, vows, _ref;
+var assert, vows;
 
 assert = require('assert');
 
-vows = (_ref = require('..')) != null ? _ref : require('vows');
+vows = require('vows');
 
 vows.add('vows/assert', {
   'The Assertion module': {
-    topic: require('assert'),
+    topic: function() {
+      return require('assert');
+    },
     '`equal`': function(assert) {
       assert.equal('hello world', 'hello world');
       return assert.equal(1, true);
     },
     '`match`': function(assert) {
       return assert.match('hello world', /^[a-z]+ [a-z]+$/);
-    },
-    '`length`': function(assert) {
-      assert.length('hello world', 11);
-      return assert.length([1, 2, 3], 3);
     },
     '`include`': function(assert) {
       assert.include('hello world', 'world');

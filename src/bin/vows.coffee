@@ -10,7 +10,8 @@ try
 catch e
     fileExt     = /\.js$/
 
-vows = require('..')
+vows = require('vows')
+require('vows')
 
 help = [
     'usage: vows [FILE, ...] [options]',
@@ -57,18 +58,10 @@ files = (path.join(process.cwd(), arg.replace(fileExt, '')) for arg in args)
 for f in files
     require(f)
 
-vows.runner.on 'end', () ->
-    results = vows.runner.results
+vows.runner.run (results) ->
     status = (results.errored and 2) or (results.broken and 1) or 0
-
-    vows.report('finish', results)
 
     if process.stdout.write('') # Check if stdout is drained
         process.exit(status)
     else
         process.stdout.on 'drain', () -> process.exit(status)
-
-vows.runner.run()
-
-
-

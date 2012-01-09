@@ -1,13 +1,13 @@
 events = require('events')
 assert = require('assert')
-vows = require('..') ? require('vows')
+vows = require('vows')
 
 vowPromiser = (description, content) ->
     promise = new events.EventEmitter
-    context = new vows.Context(description, content, { silent: true })
-    context.on 'end', () -> promise.emit('success', context)
+    context = new vows.Context(description, content)
+    context.once 'end', () -> promise.emit('success', context)
     setTimeout((() -> context.end('timeout') if context.status == 'begin'), 100)
-    process.nextTick () -> context.run()
+    process.nextTick () -> context.run(null, { silent: true })
     return promise
 
 
@@ -79,7 +79,3 @@ vows.add 'Vows Errors'
         
         'should timeout': (context) ->
             assert.equal context.result, 'timeout' 
-        
-        'should still be running': (context) ->
-            assert.equal context.results['total'], 1
-            assert.equal context.results['running'], 1

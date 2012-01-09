@@ -1,25 +1,25 @@
-var assert, events, vowPromiser, vows, _ref;
+var assert, events, vowPromiser, vows;
 
 events = require('events');
 
 assert = require('assert');
 
-vows = (_ref = require('..')) != null ? _ref : require('vows');
+vows = require('vows');
 
 vowPromiser = function(description, content) {
   var context, promise;
   promise = new events.EventEmitter;
-  context = new vows.Context(description, content, {
-    silent: true
-  });
-  context.on('end', function() {
+  context = new vows.Context(description, content);
+  context.once('end', function() {
     return promise.emit('success', context);
   });
   setTimeout((function() {
     if (context.status === 'begin') return context.end('timeout');
   }), 100);
   process.nextTick(function() {
-    return context.run();
+    return context.run(null, {
+      silent: true
+    });
   });
   return promise;
 };
@@ -124,10 +124,6 @@ vows.add('Vows Errors', {
     },
     'should timeout': function(context) {
       return assert.equal(context.result, 'timeout');
-    },
-    'should still be running': function(context) {
-      assert.equal(context.results['total'], 1);
-      return assert.equal(context.results['running'], 1);
     }
   }
 });

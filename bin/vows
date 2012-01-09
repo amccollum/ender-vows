@@ -16,7 +16,9 @@ try {
   fileExt = /\.js$/;
 }
 
-vows = require('..');
+vows = require('vows');
+
+require('vows');
 
 help = ['usage: vows [FILE, ...] [options]', '', 'options:', '  -s, --silent      Don\'t report', '  --json            Use JSON reporter', '  --spec            Use Spec reporter', '  --dot-matrix      Use Dot-Matrix reporter (default)', '  --version         Show version', '  -h, --help        You\'re staring at it'].join('\n');
 
@@ -77,11 +79,9 @@ for (_i = 0, _len = files.length; _i < _len; _i++) {
   require(f);
 }
 
-vows.runner.on('end', function() {
-  var results, status;
-  results = vows.runner.results;
+vows.runner.run(function(results) {
+  var status;
   status = (results.errored && 2) || (results.broken && 1) || 0;
-  vows.report('finish', results);
   if (process.stdout.write('')) {
     return process.exit(status);
   } else {
@@ -90,5 +90,3 @@ vows.runner.on('end', function() {
     });
   }
 });
-
-vows.runner.run();

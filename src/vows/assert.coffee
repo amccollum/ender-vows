@@ -14,7 +14,7 @@ assert.AssertionError.prototype.toString = () ->
         return message + line
         
     else
-        return vows.stylize([@expected, @operator, @actual].join(' ')).warning()
+        return vows.stylize([@expected, @operator, @actual].join(' ')).warning().toString()
 
 
 assert.matches = assert.match = (actual, expected, message) ->
@@ -46,9 +46,6 @@ assert.includes = assert.include = (actual, expected, message) ->
 assert.isEmpty = (actual, message) ->
     if not ((isObject(actual) and (key for key of actual).length == 0) or actual.length == 0)
         assert.fail(actual, 0, message, 'length', assert.isEmpty)
-
-assert.length = (actual, expected, message) ->
-    assert.fail(actual, expected, message, 'length', assert.length) if not actual.length == expected
 
 assert.isNull = (actual, message) ->
     assert.fail(actual, null, message, '===', assert.isNull) if actual != null
