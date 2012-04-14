@@ -3,9 +3,9 @@
     "version": "0.6.4",
     "description": "Asynchronous BDD & continuous integration for node.js and the browser",
     "author": "Andrew McCollum <amccollum@gmail.com>",
-    "url": "http://github.com/amccollum/vows-coffee",
-    "bugs": { "url": "http://github.com/amccollum/vows-coffee/issues" },
-    "repositories": [{ "type": "git", "url": "git://github.com/amccollum/vows-coffee" }],
+    "url": "http://github.com/amccollum/ender-vows",
+    "bugs": { "url": "http://github.com/amccollum/ender-vows/issues" },
+    "repositories": [{ "type": "git", "url": "git://github.com/amccollum/ender-vows" }],
     "licenses": [{ "type": "MIT", "url": "http://opensource.org/licenses/mit-license.php" }],
     
     "main": "lib/vows.js",
